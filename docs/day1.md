@@ -1,9 +1,9 @@
-# ProjectDNA — Day 1: Foundation & Backend Scaffold
+# 𝐏𝐫𝐨𝐣𝐞𝐜𝐭𝐃𝐍𝐀 - 𝐃𝐚𝐲 1: 𝐅𝐨𝐮𝐧𝐝𝐚𝐭𝐢𝐨𝐧 & 𝐁𝐚𝐜𝐤𝐞𝐧𝐝 𝐒𝐜𝐚𝐟𝐟𝐨𝐥𝐝
 
 **Date:** July 9, 2026
 **Goal:** Set up the complete project scaffold, database schema, authentication, and core API routes.
 
----
+--
 
 ## What I Built
 
@@ -24,7 +24,7 @@ projectdna/
 - **Three separate services** allow independent scaling and language-appropriate tooling (Node for API, Python for ML/AI, React for UI).
 - **Docker Compose for infra only** — Postgres and Redis run in containers, but app services run locally for fast iteration with hot-reload.
 
----
+--
 
 ### 2. Database Schema (PostgreSQL)
 
@@ -56,7 +56,7 @@ Created **13 tables** upfront to avoid schema restructuring later:
 - **CASCADE deletes** — deleting a project cleans up all related data automatically.
 - **Auto-migration on server startup** — `schema.sql` runs via `CREATE TABLE IF NOT EXISTS`, making it idempotent and safe to run on every boot.
 
----
+--
 
 ### 3. Authentication System
 
@@ -84,7 +84,7 @@ Created **13 tables** upfront to avoid schema restructuring later:
 - **Password hash with cost factor 10** — good balance of security and speed.
 - **Duplicate email returns 409** — catches Postgres unique constraint violation (`23505`).
 
----
+--
 
 ### 4. Project & Task API
 
@@ -119,7 +119,7 @@ Created **13 tables** upfront to avoid schema restructuring later:
 - **GitHub tech stack detection** — checks for `package.json` (Node.js) or `requirements.txt` (Python) to auto-detect stack.
 - **Upsert for repositories** — `ON CONFLICT` update allows re-indexing without duplicate rows.
 
----
+--
 
 ### 5. Real-Time Events (SSE)
 
@@ -142,7 +142,7 @@ Created **13 tables** upfront to avoid schema restructuring later:
 - Auto-reconnect built into the browser's `EventSource` API.
 - Sufficient for this use case (Kanban updates, not a real-time chat).
 
----
+--
 
 ### 6. AI Service (Flask — Placeholder)
 
@@ -157,7 +157,7 @@ Minimal Flask app with stub endpoints to be implemented on Day 2:
 | `POST /generate/interview-questions` | Interview Agent |
 | `POST /generate/improvements` | Improvement Agent |
 
----
+--
 
 ### 7. DevOps & CI
 
@@ -170,7 +170,7 @@ Minimal Flask app with stub endpoints to be implemented on Day 2:
 - **Job 1: `test-and-build`** — runs on every push/PR to main. Installs server deps → runs tests → installs client deps → builds client.
 - **Job 2: `deploy`** — runs only on push to main (not PRs). Placeholder for deployment step.
 
----
+--
 
 ## Port Map
 
@@ -182,7 +182,7 @@ Minimal Flask app with stub endpoints to be implemented on Day 2:
 | PostgreSQL | 5433 |
 | Redis | 6379 |
 
----
+--
 
 ## Terminal Screenshots
 
@@ -203,7 +203,7 @@ Minimal Flask app with stub endpoints to be implemented on Day 2:
 
 Token Generation Successful.
 
----
+--
 
 ## Files Created Today
 
@@ -242,9 +242,9 @@ docs/
 └── day1.md                      ← This file
 ```
 
----
+--
 
-## What's Next — Day 2
+## What's Next - Day 2
 
 - [ ] Implement the RAG pipeline in `ai-service` (chunking, embeddings, FAISS)
 - [ ] Wire up the AI chat endpoint with LLM integration
