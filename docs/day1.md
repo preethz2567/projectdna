@@ -187,18 +187,21 @@ Minimal Flask app with stub endpoints to be implemented on Day 2:
 ## Terminal Screenshots
 
 ### Docker Compose Up
-![alt text](image.png)
+<img width="1231" height="142" alt="image" src="https://github.com/user-attachments/assets/45fbbffb-a1a0-451c-b5a5-d3fd613549fc" />
+
 
 ### Server Startup
-<!-- npm run dev output showing "Schema ready" and "ProjectDNA server running on port 3001" 
+<img width="816" height="330" alt="image" src="https://github.com/user-attachments/assets/610127d3-e406-4f2c-bb88-3be480b7ae40" />
+
 
 ### Health Check
-<!-- Paste screenshot: curl http://localhost:3001/health returning {"status":"ok"} -->
+<img width="640" height="71" alt="image" src="https://github.com/user-attachments/assets/37be48ee-00d0-4350-a139-7580c6c1c9ba" />
+
 
 
 ### Register Test
-<!-- Paste screenshot: curl -X POST http://localhost:3001/api/auth/register -H "Content-Type: application/json" -d '{"email":"test@test.com","password":"test123","display_name":"Test User"}' -->
-> 📸 `[Paste terminal screenshot here]`
+
+Token Generation Successful.
 
 ---
 
