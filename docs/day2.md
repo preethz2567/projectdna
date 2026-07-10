@@ -1,4 +1,4 @@
-# ProjectDNA — Day 2: AI Pipeline & RAG System
+# 𝐏𝐫𝐨𝐣𝐞𝐜𝐭𝐃𝐍𝐀 - 𝐃𝐚𝐲 2: 𝐀𝐈 𝐏𝐢𝐩𝐞𝐥𝐢𝐧𝐞 & 𝐑𝐀𝐆 𝐒𝐲𝐬𝐭𝐞𝐦
 
 **Date:** July 10, 2026
 **Goal:** Build the complete AI backend — RAG pipeline, LLM integration, and 5 specialized agents.
@@ -59,7 +59,7 @@ A thin wrapper around the OpenRouter API — 35 lines of code.
 - No vendor lock-in
 - Pay-per-token pricing, no monthly commitment
 
----
+--
 
 ### 3. Five Specialized Agents (`agents.py`)
 
@@ -97,7 +97,7 @@ Replaced the Day 1 placeholder stubs with fully functional endpoints:
 
 **Design decision — lazy imports:** Agent modules are imported inside route handlers, not at the top of `app.py`. This means the Flask server starts instantly, and the sentence-transformer model only loads when the first AI request hits.
 
----
+--
 
 ### 5. Node.js Orchestration Layer (`server/src/routes/ai.js`)
 
@@ -180,20 +180,19 @@ Generated 25 actionable suggestions across 5 categories (security, performance, 
 --
 
 ## Terminal Screenshots
+[ Few screenshots are cropped to avoid exposing the JWT tokens in the curl command]
 
 ### AI Indexing
-<!-- Paste screenshot: curl POST /ai/index showing {"status":"indexed","chunks":12} -->
-> 📸 `[Paste terminal screenshot here]`
+<img width="1097" height="98" alt="image" src="https://github.com/user-attachments/assets/34c883ad-54b7-4c02-a4d2-24a740a258fb" />
+
 
 ### Chat Response
-<!-- Paste screenshot: curl POST /ai/chat showing AI response about the project -->
-> 📸 `[Paste terminal screenshot here]`
+<img width="1522" height="182" alt="image" src="https://github.com/user-attachments/assets/0f70be66-2ebc-47c2-9fa9-15215f772f4c" />
+
 
 ### Improvement Suggestions
-<!-- Paste screenshot: curl POST /generate/improvements showing structured suggestions -->
-> 📸 `[Paste terminal screenshot here]`
+<img width="1897" height="737" alt="image" src="https://github.com/user-attachments/assets/759589b4-0fcb-4f36-8b6b-739adc15ed26" />
 
---
 
 ## Files Created / Modified Today
 
