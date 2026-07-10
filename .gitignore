@@ -7,3 +7,5 @@ dist/
 .terraform/
 terraform.tfvars
 *.tfstate
+ai-service/data/
+project_reference.md

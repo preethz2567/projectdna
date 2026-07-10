@@ -39,7 +39,8 @@ CREATE TABLE IF NOT EXISTS repositories (
   tech_stack JSONB,
   dependencies JSONB,
   last_indexed_at TIMESTAMPTZ,
-  created_at TIMESTAMPTZ DEFAULT NOW()
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  UNIQUE(project_id)
 );
 
 CREATE TABLE IF NOT EXISTS repo_chunks (
@@ -60,7 +61,8 @@ CREATE TABLE IF NOT EXISTS documents (
   content TEXT NOT NULL,
   generated_by TEXT DEFAULT 'ai' CHECK (generated_by IN ('ai', 'user')),
   created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ DEFAULT NOW()
+  updated_at TIMESTAMPTZ DEFAULT NOW(),
+  UNIQUE(project_id, doc_type)
 );
 
 CREATE TABLE IF NOT EXISTS tasks (
@@ -148,3 +150,13 @@ CREATE INDEX IF NOT EXISTS idx_timeline_project ON timeline_events(project_id);
 CREATE INDEX IF NOT EXISTS idx_chunks_repo ON repo_chunks(repository_id);
 CREATE INDEX IF NOT EXISTS idx_chat_project ON chat_messages(project_id);
 CREATE INDEX IF NOT EXISTS idx_feedback_project ON feedback(project_id);
+
+-- Add unique constraints for existing tables (safe to re-run)
+DO $$ BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'repositories_project_id_key') THEN
+    ALTER TABLE repositories ADD CONSTRAINT repositories_project_id_key UNIQUE (project_id);
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'documents_project_id_doc_type_key') THEN
+    ALTER TABLE documents ADD CONSTRAINT documents_project_id_doc_type_key UNIQUE (project_id, doc_type);
+  END IF;
+END $$;
