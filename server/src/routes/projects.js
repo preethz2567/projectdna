@@ -57,11 +57,16 @@ router.get('/:projectId', authenticate, requireProjectAccess, async (req, res) =
 router.post('/:projectId/members', authenticate, requireProjectAccess, async (req, res) => {
   try {
     const { email, role = 'member' } = req.body;
-    const user = await pool.query('SELECT id FROM users WHERE email = $1', [email]);
-    if (!user.rows[0]) return res.status(404).json({ error: 'User not found' });
+    const lowerEmail = email.toLowerCase().trim();
+    // Default to 'member' if the provided role isn't allowed in DB constraint
+    const dbRole = ['owner', 'member', 'mentor'].includes(role) ? role : 'member';
+    
+    const user = await pool.query('SELECT id FROM users WHERE LOWER(email) = $1', [lowerEmail]);
+    if (!user.rows[0]) return res.status(404).json({ error: 'User not found. They must register first.' });
+    
     await pool.query(
-      'INSERT INTO project_members (project_id, user_id, role) VALUES ($1, $2, $3) ON CONFLICT DO NOTHING',
-      [req.params.projectId, user.rows[0].id, role]
+      'INSERT INTO project_members (project_id, user_id, role) VALUES ($1, $2, $3) ON CONFLICT (project_id, user_id) DO NOTHING',
+      [req.params.projectId, user.rows[0].id, dbRole]
     );
     res.json({ message: 'Member added' });
   } catch (err) {

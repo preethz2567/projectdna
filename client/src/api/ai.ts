@@ -1,0 +1,45 @@
+import api from './client';
+
+const base = (projectId: string) => `/projects/${projectId}/ai`;
+
+export const indexRepo = (projectId: string) =>
+  api.post(`${base(projectId)}/index`, {}).then(r => r.data);
+
+export const sendChat = (projectId: string, message: string) =>
+  api.post(`${base(projectId)}/chat`, { message }).then(r => r.data);
+
+export const getChatHistory = (projectId: string) =>
+  api.get(`${base(projectId)}/chat/history`).then(r => r.data);
+
+export const generateDoc = (projectId: string, doc_type: string) =>
+  api.post(`${base(projectId)}/generate/documentation`, { doc_type }).then(r => r.data);
+
+export const getDocuments = (projectId: string) =>
+  api.get(`${base(projectId)}/documents`).then(r => r.data);
+
+export const generateInterviewQuestions = (projectId: string, category: string) =>
+  api.post(`${base(projectId)}/generate/interview-questions`, { category }).then(r => r.data);
+
+export const getInterviewQuestions = (projectId: string, category?: string) =>
+  api.get(`${base(projectId)}/interview-questions${category ? `?category=${category}` : ''}`).then(r => r.data);
+
+export const generateImprovements = (projectId: string) =>
+  api.post(`${base(projectId)}/generate/improvements`, {}).then(r => r.data);
+
+export const generateArchitecture = (projectId: string) =>
+  api.post(`${base(projectId)}/generate/architecture`, {}).then(r => r.data);
+
+export const getTimeline = (projectId: string) =>
+  api.get(`${base(projectId)}/timeline`).then(r => r.data);
+
+export const getFeedback = (projectId: string) =>
+  api.get(`${base(projectId)}/feedback`).then(r => r.data);
+
+export const addFeedback = (projectId: string, data: { category: string; content: string }) =>
+  api.post(`${base(projectId)}/feedback`, data).then(r => r.data);
+
+export const addExperience = (projectId: string, data: object) =>
+  api.post(`${base(projectId)}/experiences`, data).then(r => r.data);
+
+export const getExperiences = (projectId: string) =>
+  api.get(`${base(projectId)}/experiences`).then(r => r.data);
