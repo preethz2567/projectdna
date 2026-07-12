@@ -35,11 +35,22 @@ export const getTimeline = (projectId: string) =>
 export const getFeedback = (projectId: string) =>
   api.get(`${base(projectId)}/feedback`).then(r => r.data);
 
-export const addFeedback = (projectId: string, data: { category: string; content: string }) =>
+export const addFeedback = (projectId: string, data: object) =>
   api.post(`${base(projectId)}/feedback`, data).then(r => r.data);
+
+export const getExperiences = (projectId: string) =>
+  api.get(`${base(projectId)}/experiences`).then(r => r.data);
 
 export const addExperience = (projectId: string, data: object) =>
   api.post(`${base(projectId)}/experiences`, data).then(r => r.data);
 
-export const getExperiences = (projectId: string) =>
-  api.get(`${base(projectId)}/experiences`).then(r => r.data);
+export const generateRevision = (projectId: string) =>
+  api.post(`${base(projectId)}/generate/revision`, {}).then(r => r.data);
+
+export const generateRecommendations = (projectId: string) =>
+  api.post(`${base(projectId)}/ai/recommendations`, {}).then(r => r.data);
+
+export const generateImprovements2 = (projectId: string) =>
+  api.post(`${base(projectId)}/generate/improvements`, {}).then(r => r.data);
+
+

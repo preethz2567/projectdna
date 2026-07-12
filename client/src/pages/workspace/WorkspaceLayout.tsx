@@ -11,7 +11,10 @@ import Documents from './Documents';
 import Feedback from './Feedback';
 import Timeline from './Timeline';
 import Members from './Members';
-
+import Experiences from './Experiences';
+import Improvements from './Improvements';
+import Revision from './Revision';
+import Notes from './Notes';
 const NAV = [
   { path: '', label: 'Overview', icon: '⬡' },
   { path: 'repository', label: 'Repository', icon: '⌥' },
@@ -22,6 +25,10 @@ const NAV = [
   { path: 'feedback', label: 'Feedback', icon: '◇' },
   { path: 'timeline', label: 'Timeline', icon: '◫' },
   { path: 'members', label: 'Team', icon: '👤' },
+  { path: 'experiences', label: 'Experiences', icon: '◉' },
+  { path: 'improvements', label: 'Improvements', icon: '◈' },
+  { path: 'revision', label: 'Revision', icon: '◫' },
+  { path: 'notes', label: 'Notes', icon: '◻' },
 ];
 
 export default function WorkspaceLayout() {
@@ -81,6 +88,10 @@ export default function WorkspaceLayout() {
           <Route path="feedback" element={<Feedback />} />
           <Route path="timeline" element={<Timeline />} />
           <Route path="members" element={<Members />} />
+          <Route path="experiences" element={<Experiences />} />
+          <Route path="improvements" element={<Improvements />} />
+          <Route path="revision" element={<Revision />} />
+          <Route path="notes" element={<Notes />} />
         </Routes>
       </div>
     </div>

@@ -245,4 +245,78 @@ router.get('/experiences', authenticate, requireProjectAccess, async (req, res) 
     res.json(result.rows);
 });
 
+// Generate revision guide
+router.post('/generate/revision', authenticate, requireProjectAccess, async (req, res) => {
+    try {
+        const repo = await getRepo(req.params.projectId);
+        if (!repo) return res.status(404).json({ error: 'No repository connected' });
+
+        // Fetch experiences and questions to include in the revision guide
+        const [experiences, questions] = await Promise.all([
+            pool.query('SELECT * FROM experiences WHERE project_id = $1 ORDER BY created_at DESC LIMIT 5', [req.params.projectId]),
+            pool.query('SELECT question, answer, category FROM interview_questions WHERE project_id = $1 LIMIT 20', [req.params.projectId])
+        ]);
+
+        const response = await axios.post(`${AI_URL}/generate/revision`, {
+            repository_id: repo.id,
+            experiences: experiences.rows,
+            questions: questions.rows
+        }, { timeout: 90000 });
+
+        res.json(response.data);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// Generate project recommendations (uses all user projects, not just one)
+router.post('/recommendations', authenticate, async (req, res) => {
+    try {
+        // Note: this route doesn't use projectId — it uses all user projects
+        const projects = await pool.query(
+            `SELECT p.title, p.description, r.tech_stack
+             FROM projects p
+             JOIN project_members pm ON p.id = pm.project_id
+             LEFT JOIN repositories r ON r.project_id = p.id
+             WHERE pm.user_id = $1`,
+            [req.user.id]
+        );
+
+        const response = await axios.post(`${AI_URL}/generate/recommendations`, {
+            projects: projects.rows
+        }, { timeout: 60000 });
+
+        res.json(response.data);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// Notes CRUD
+router.get('/notes', authenticate, requireProjectAccess, async (req, res) => {
+  const result = await pool.query(
+    'SELECT * FROM notes WHERE project_id = $1 ORDER BY updated_at DESC',
+    [req.params.projectId]
+  );
+  res.json(result.rows);
+});
+
+router.post('/notes', authenticate, requireProjectAccess, async (req, res) => {
+  try {
+    const { title, content } = req.body;
+    const result = await pool.query(
+      'INSERT INTO notes (project_id, author_id, title, content) VALUES ($1, $2, $3, $4) RETURNING *',
+      [req.params.projectId, req.user.id, title, content]
+    );
+    res.status(201).json(result.rows[0]);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+router.delete('/notes/:noteId', authenticate, requireProjectAccess, async (req, res) => {
+  await pool.query('DELETE FROM notes WHERE id = $1 AND project_id = $2', [req.params.noteId, req.params.projectId]);
+  res.json({ message: 'Note deleted' });
+});
+
 module.exports = router;

@@ -49,7 +49,12 @@ export default function Dashboard() {
             <h1>Projects</h1>
             <p className="text-muted mt-1">Your project workspaces</p>
           </div>
-          <button className="btn btn-primary" onClick={() => setShowModal(true)}>+ New project</button>
+          <div style={{ display: 'flex', gap: '12px' }}>
+            <button className="btn btn-secondary" onClick={() => navigate('/recommendations')}>
+              ◈ What to build next
+            </button>
+            <button className="btn btn-primary" onClick={() => setShowModal(true)}>+ New project</button>
+          </div>
         </div>
 
         {projects.length === 0 ? (

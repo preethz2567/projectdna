@@ -129,5 +129,29 @@ def generate_architecture():
         return jsonify({'error': str(e)}), 500
 
 
+@app.route('/generate/revision', methods=['POST'])
+def generate_revision():
+    try:
+        from agents import revision_agent
+        data = request.json
+        result = revision_agent(
+            repository_id=data['repository_id'],
+            experiences=data.get('experiences', []),
+            questions=data.get('questions', [])
+        )
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/generate/recommendations', methods=['POST'])
+def generate_recommendations():
+    try:
+        from agents import recommendations_agent
+        data = request.json
+        result = recommendations_agent(user_projects=data.get('projects', []))
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=int(os.getenv('PORT', 5001)), debug=False)
