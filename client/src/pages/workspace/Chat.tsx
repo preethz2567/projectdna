@@ -71,13 +71,27 @@ export default function Chat() {
           <div ref={bottomRef} />
         </div>
 
-        <form className="chat-input-bar" onSubmit={handleSend}>
-          <textarea className="chat-input" rows={2} value={input}
-            onChange={e => setInput(e.target.value)}
-            onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(e); } }}
-            placeholder="Ask about your project... (Enter to send, Shift+Enter for new line)" />
-          <button className="btn btn-primary" type="submit" disabled={sending || !input.trim()}>Send</button>
-        </form>
+        <div style={{ padding: '24px', display: 'flex', justifyContent: 'center' }}>
+          <form onSubmit={handleSend} style={{ width: '100%', maxWidth: 800, position: 'relative', display: 'flex', flexDirection: 'column', background: 'var(--bg-card)', border: '1px solid var(--border)', padding: '16px 20px', boxShadow: '0 10px 30px -10px rgba(0,0,0,0.1)' }}>
+            <textarea 
+              value={input}
+              onChange={e => setInput(e.target.value)}
+              onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(e as any); } }}
+              placeholder="Ask anything about the codebase..."
+              style={{ width: '100%', minHeight: 80, maxHeight: 300, resize: 'vertical', border: 'none', background: 'transparent', outline: 'none', color: 'var(--text)', fontSize: 15, fontFamily: 'var(--font-sans)', padding: 0, boxSizing: 'border-box' }}
+            />
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 12, borderTop: '1px solid var(--border)', paddingTop: 12 }}>
+              <div style={{ fontSize: 11, color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>ENTER TO SEND • SHIFT+ENTER FOR NEW LINE</div>
+              <button 
+                type="submit" 
+                disabled={sending || !input.trim()}
+                style={{ background: 'var(--accent)', color: 'white', border: 'none', padding: '8px 24px', fontSize: 12, fontWeight: 700, fontFamily: 'var(--font-mono)', textTransform: 'uppercase', cursor: (sending || !input.trim()) ? 'not-allowed' : 'pointer', opacity: (sending || !input.trim()) ? 0.5 : 1, transition: 'opacity 0.2s' }}
+              >
+                Send Message
+              </button>
+            </div>
+          </form>
+        </div>
       </div>
     </div>
   );

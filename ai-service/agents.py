@@ -1,11 +1,32 @@
 from llm import call_llm
 from rag import retrieve
 
+# ── Anti-hallucination enforcement block (appended to every agent prompt) ──
+ANTI_HALLUCINATION_RULES = """
+
+CRITICAL RULES:
+- If the context says "No repository content has been indexed yet" — tell the user exactly that and ask them to click "Index for AI" on the Repository page first.
+- If you cannot find specific information in the provided context — say "I don't see that in the indexed files" rather than making something up.
+- NEVER invent project names, features, or technical decisions that aren't in the context.
+- NEVER describe a "hypothetical" project. Only describe what you actually see in the context.
+- If asked about something not in the context, respond: "The indexed files don't contain information about [topic]. This might be in files that weren't indexed, or the repository may need to be re-indexed."
+"""
+
 
 def build_context(chunks: list[dict]) -> str:
     """Formats retrieved chunks into a context block for the prompt."""
     if not chunks:
-        return "No repository context available."
+        return "CONTEXT: No repository content has been indexed yet. The repository has been connected but not indexed, or the index is empty."
+
+    # Check if we only have structural chunks (no actual code or readme content)
+    has_real_content = any(
+        c.get('chunk_type') in ('readme', 'code', 'docs')
+        for c in chunks
+    )
+
+    if not has_real_content:
+        return "CONTEXT: Only structural metadata is available (file names and folder structure). No source code or documentation has been indexed yet."
+
     context = "REPOSITORY CONTEXT (use only this information to answer):\n\n"
     for chunk in chunks:
         context += f"[{chunk['chunk_type'].upper()} - {chunk['file_path']}]\n"
@@ -25,7 +46,7 @@ def chat_agent(repository_id: str, question: str, chat_history: list = []) -> di
     system_prompt = """You are ProjectDNA, an AI assistant that helps developers understand their software projects.
 Answer questions accurately based ONLY on the repository context provided.
 If the context doesn't contain enough information to answer, say so clearly.
-Be concise and technical. Format code snippets with markdown."""
+Be concise and technical. Format code snippets with markdown.""" + ANTI_HALLUCINATION_RULES
 
     user_message = f"{context}\n\nQuestion: {question}"
 
@@ -64,7 +85,7 @@ def documentation_agent(repository_id: str, doc_type: str, repo_data: dict) -> d
 
     system_prompt = f"""You are a technical documentation expert.
 Generate accurate, well-structured {doc_type} documentation based ONLY on the repository context.
-Use markdown formatting. Be specific and technical."""
+Use markdown formatting. Be specific and technical.""" + ANTI_HALLUCINATION_RULES
 
     user_message = f"{context}\n\nTask: {prompts.get(doc_type, 'Generate project documentation.')}"
 
@@ -85,6 +106,15 @@ def interview_agent(repository_id: str, category: str, repo_data: dict) -> dict:
     chunks = retrieve(repository_id, f'{category} questions about this project', top_k=5)
     context = build_context(chunks)
 
+    # Guard: refuse to generate questions if there's no real content
+    if not chunks or not any(c.get('chunk_type') in ('readme', 'code') for c in chunks):
+        return {
+            'category': category,
+            'questions': [],
+            'error': 'No source code has been indexed. Please index the repository first.',
+            'agent': 'interview'
+        }
+
     category_prompts = {
         'technical': 'Generate 8 technical questions about the implementation, libraries used, and coding decisions.',
         'architecture': 'Generate 6 questions about system design, component choices, scalability, and architectural decisions.',
@@ -104,7 +134,7 @@ Format your response as a JSON array:
     "difficulty": "easy|medium|hard"
   }
 ]
-Return ONLY the JSON array, no other text."""
+Return ONLY the JSON array, no other text.""" + ANTI_HALLUCINATION_RULES
 
     user_message = f"{context}\n\nTask: {category_prompts.get(category, 'Generate interview questions.')}"
 
@@ -142,7 +172,7 @@ Format your response as JSON:
   "missing_features": ["suggestion1", "suggestion2"],
   "deployment": ["suggestion1", "suggestion2"]
 }
-Return ONLY the JSON, no other text. Be specific and reference actual things you see in the codebase."""
+Return ONLY the JSON, no other text. Be specific and reference actual things you see in the codebase.""" + ANTI_HALLUCINATION_RULES
 
     user_message = f"{context}\n\nAnalyze this project and suggest improvements."
 
@@ -178,7 +208,7 @@ Provide a comprehensive architectural breakdown covering:
 5. Key architectural decisions and trade-offs
 6. How this would scale
 
-Use markdown with clear headings. Be specific about what you see in THIS project."""
+Use markdown with clear headings. Be specific about what you see in THIS project.""" + ANTI_HALLUCINATION_RULES
 
     user_message = f"{context}\n\nExplain the architecture of this project in depth."
 
@@ -228,7 +258,7 @@ Structure it with these exact sections:
 ## What to Improve Next Time
 ## Architecture in One Paragraph
 
-Be specific to THIS project. Be concise. Use bullet points where helpful."""
+Be specific to THIS project. Be concise. Use bullet points where helpful.""" + ANTI_HALLUCINATION_RULES
 
     user_message = f"{context}{exp_summary}{q_summary}\n\nGenerate the revision guide."
 
@@ -291,3 +321,154 @@ Return ONLY the JSON array."""
         recs = []
 
     return { 'recommendations': recs, 'agent': 'recommendations' }
+
+# ── Agent 6: Architecture Diagram (Mermaid) ─────────────────────────────
+def diagram_agent(repository_id: str, diagram_type: str) -> dict:
+    """
+    Generates Mermaid diagram syntax for the project.
+    diagram_type: 'architecture' | 'database' | 'flow' | 'sequence'
+    """
+    queries = {
+        'architecture': 'system components services API layers frontend backend database',
+        'database': 'database schema tables relationships foreign keys columns',
+        'flow': 'user request flow authentication middleware routes database response',
+        'sequence': 'API request response sequence user authentication flow'
+    }
+    chunks = retrieve(repository_id, queries.get(diagram_type, 'system architecture'), top_k=6)
+    context = build_context(chunks)
+
+    type_instructions = {
+        'architecture': '''Generate a Mermaid flowchart showing the system architecture.
+Use: graph TD
+Show all major components and how they connect.
+Example structure: Client → API Layer → Services → Database/Storage
+Label each arrow with the type of interaction (HTTP, SQL, S3 API, etc.)''',
+
+        'database': '''Generate a Mermaid ER diagram showing the database schema.
+Use: erDiagram
+Show tables as entities with their key fields.
+Show relationships between tables (one-to-many, many-to-many).
+Only include tables you can infer from the codebase.''',
+
+        'flow': '''Generate a Mermaid flowchart showing the main user request flow.
+Use: graph LR
+Show the path from user action through the system to the response.
+Include decision points (auth check, validation, etc.)''',
+
+        'sequence': '''Generate a Mermaid sequence diagram for the main API flow.
+Use: sequenceDiagram
+Show participants: Browser, Express API, Database, S3 (if applicable)
+Show the request/response sequence for a typical operation.'''
+    }
+
+    system_prompt = f"""You are a software architect creating technical diagrams.
+Generate ONLY valid Mermaid diagram syntax based on the repository context.
+{type_instructions.get(diagram_type, type_instructions['architecture'])}
+
+CRITICAL RULES:
+- Output ONLY the Mermaid code, nothing else
+- No markdown code fences (no ```mermaid)
+- No explanation text before or after
+- Start directly with the diagram type keyword (graph, erDiagram, sequenceDiagram)
+- Use only what you can see in the repository context
+- Keep it readable — max 15-20 nodes
+- ALWAYS enclose node labels containing parentheses, commas, or special characters in quotes (e.g. A["User Action (Upload)"])""" + ANTI_HALLUCINATION_RULES
+
+    user_message = f"{context}\n\nGenerate the {diagram_type} diagram."
+    mermaid_code = call_llm(system_prompt, user_message, max_tokens=1000)
+
+    # Clean up common LLM mistakes
+    import re
+    mermaid_code = re.sub(r'```mermaid\s*', '', mermaid_code)
+    mermaid_code = re.sub(r'```\s*', '', mermaid_code)
+    mermaid_code = mermaid_code.strip()
+
+    return { 'diagram': mermaid_code, 'type': diagram_type, 'agent': 'diagram' }
+
+
+# ── Agent 7: Quiz Generator ──────────────────────────────────────────────
+def quiz_agent(repository_id: str, difficulty: str = 'medium') -> dict:
+    """
+    Generates an interactive multiple-choice quiz about the project.
+    Returns 8 questions with 4 options each and the correct answer.
+    """
+    chunks = retrieve(repository_id, 'architecture authentication database deployment API design decisions', top_k=6)
+    context = build_context(chunks)
+
+    system_prompt = f"""You are creating a technical quiz about a software project.
+Generate exactly 8 multiple-choice questions at {difficulty} difficulty.
+Questions should test genuine understanding of THIS project's technical decisions.
+
+Format as JSON array — return ONLY the JSON, nothing else:
+[
+  {{
+    "question": "Why does this project use JWT instead of session-based auth?",
+    "options": ["A) It is faster", "B) It allows stateless authentication across services", "C) It is more secure than sessions", "D) Sessions are not supported by Express"],
+    "correct": "B",
+    "explanation": "JWT enables stateless auth — the server doesn't need to store session state, making it suitable for APIs called from multiple clients."
+  }}
+]
+
+Make questions specific to THIS project. Test architectural decisions, not generic trivia.""" + ANTI_HALLUCINATION_RULES
+
+    user_message = f"{context}\n\nGenerate {difficulty} difficulty quiz questions about this project."
+    raw = call_llm(system_prompt, user_message, max_tokens=2500)
+
+    import json, re
+    try:
+        match = re.search(r'\[.*\]', raw, re.DOTALL)
+        questions = json.loads(match.group()) if match else []
+    except Exception:
+        questions = []
+
+    return { 'questions': questions, 'difficulty': difficulty, 'agent': 'quiz' }
+
+
+# ── Agent 8: Deck Generator ──────────────────────────────────────────────
+def deck_agent(repository_id: str, deck_type: str = 'technical') -> dict:
+    """
+    Generates presentation slide content for reveal.js.
+    deck_type: 'technical' | 'demo' | 'interview'
+    """
+    chunks = retrieve(repository_id, 'project overview architecture features deployment tech stack', top_k=8)
+    context = build_context(chunks)
+
+    deck_configs = {
+        'technical': 'a deep technical presentation for engineers — cover architecture, tech decisions, database design, deployment pipeline, and challenges solved',
+        'demo': 'a product demo presentation — cover what it does, key features, live demo flow, tech stack, and what makes it unique',
+        'interview': 'an interview/viva presentation — cover project purpose, your role, technical decisions and why, challenges faced, and what you learned'
+    }
+
+    system_prompt = f"""You are creating a reveal.js presentation.
+Generate {deck_configs.get(deck_type, deck_configs['technical'])}.
+
+Output ONLY a JSON array of slide objects — no other text:
+[
+  {{
+    "title": "Slide Title",
+    "content": "Main bullet point\\n• Sub point 1\\n• Sub point 2",
+    "notes": "Speaker notes for this slide",
+    "type": "title|content|code|diagram"
+  }}
+]
+
+Rules:
+- 8-10 slides total
+- First slide: project title and one-line description
+- Last slide: key takeaways / what I learned
+- content uses \\n for line breaks, • for bullets
+- Keep each slide focused — max 4-5 bullet points
+- notes field contains what the presenter should SAY, not show
+- Be specific to THIS project""" + ANTI_HALLUCINATION_RULES
+
+    user_message = f"{context}\n\nGenerate a {deck_type} presentation deck."
+    raw = call_llm(system_prompt, user_message, max_tokens=3000)
+
+    import json, re
+    try:
+        match = re.search(r'\[.*\]', raw, re.DOTALL)
+        slides = json.loads(match.group()) if match else []
+    except Exception:
+        slides = []
+
+    return { 'slides': slides, 'deck_type': deck_type, 'agent': 'deck' }

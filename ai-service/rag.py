@@ -21,11 +21,11 @@ def chunk_repository(repo_data: dict) -> list[dict]:
     """
     Takes raw repository data and returns a list of text chunks with metadata.
     Each chunk is a dict: { content, chunk_type, file_path }
-    Strategy: chunk by logical section, not by fixed token count.
-    This gives the retriever more meaningful units to work with.
+    Strategy: chunk by logical section for non-code, chunk by file for code.
     """
     chunks = []
 
+    # ── README chunks (split by ## sections, max 2000 chars each) ──────
     readme = repo_data.get('readme', '')
     if readme:
         sections = readme.split('\n## ')
@@ -37,18 +37,77 @@ def chunk_repository(repo_data: dict) -> list[dict]:
                     'file_path': 'README.md'
                 })
 
+    # ── Folder structure overview chunk ─────────────────────────────────
     folder_structure = repo_data.get('folder_structure', [])
+    if isinstance(folder_structure, str):
+        try:
+            folder_structure = json.loads(folder_structure)
+        except:
+            folder_structure = []
+
     if folder_structure:
         structure_text = "Project folder structure:\n"
-        for item in folder_structure[:50]:
-            structure_text += f"- {item.get('type', 'file')}: {item.get('path', item.get('name', ''))}\n"
+        for item in folder_structure[:100]:
+            if isinstance(item, dict):
+                structure_text += f"- {item.get('type', 'file')}: {item.get('path', item.get('name', ''))}\n"
         chunks.append({
-            'content': structure_text,
+            'content': structure_text[:2000],
             'chunk_type': 'structure',
             'file_path': 'root'
         })
 
+    # ── Source code chunks from folder_structure items with content ─────
+    code_chunks = []
+    files_with_content = []
+
+    if isinstance(folder_structure, list):
+        for item in folder_structure:
+            if not isinstance(item, dict):
+                continue
+            file_content = item.get('content')
+            if not file_content:
+                continue
+
+            files_with_content.append(item)
+            file_path = item.get('path', item.get('name', 'unknown'))
+            full_text = f"File: {file_path}\n\n{file_content}"
+
+            if len(full_text) <= 4000:
+                # Single chunk for small files
+                code_chunks.append({
+                    'content': full_text,
+                    'chunk_type': 'code',
+                    'file_path': file_path
+                })
+            else:
+                # Sliding window split for large files
+                chunk_size = 4000
+                overlap = 200
+                total_parts = max(1, (len(full_text) - overlap) // (chunk_size - overlap) + 1)
+                for part_idx in range(total_parts):
+                    start = part_idx * (chunk_size - overlap)
+                    end = start + chunk_size
+                    part_text = full_text[start:end]
+                    if not part_text.strip():
+                        continue
+                    header = f"File: {file_path} (part {part_idx + 1} of {total_parts})\n\n"
+                    code_chunks.append({
+                        'content': header + part_text if part_idx > 0 else part_text,
+                        'chunk_type': 'code',
+                        'file_path': file_path
+                    })
+
+    print(f"Chunked {len(code_chunks)} code chunks from {len(files_with_content)} source files")
+    chunks.extend(code_chunks)
+
+    # ── Tech stack chunk ────────────────────────────────────────────────
     tech_stack = repo_data.get('tech_stack', [])
+    if isinstance(tech_stack, str):
+        try:
+            tech_stack = json.loads(tech_stack)
+        except:
+            tech_stack = []
+
     if tech_stack:
         chunks.append({
             'content': f"Technology stack: {', '.join(tech_stack if isinstance(tech_stack, list) else [])}",
@@ -56,7 +115,14 @@ def chunk_repository(repo_data: dict) -> list[dict]:
             'file_path': 'package.json / requirements.txt'
         })
 
+    # ── Dependencies chunk ──────────────────────────────────────────────
     dependencies = repo_data.get('dependencies', {})
+    if isinstance(dependencies, str):
+        try:
+            dependencies = json.loads(dependencies)
+        except:
+            dependencies = {}
+
     if dependencies:
         dep_text = "Dependencies:\n"
         for name, version in (dependencies.items() if isinstance(dependencies, dict) else {}.items()):
@@ -67,6 +133,7 @@ def chunk_repository(repo_data: dict) -> list[dict]:
             'file_path': 'package.json / requirements.txt'
         })
 
+    # ── Vision / Description chunk ──────────────────────────────────────
     vision = repo_data.get('vision', '')
     description = repo_data.get('description', '')
     if vision or description:
@@ -118,6 +185,7 @@ def index_repository(repository_id: str, repo_data: dict) -> int:
         cur.close()
         conn.close()
 
+    print(f"Indexed {len(chunks)} total chunks for repository {repository_id}")
     return len(chunks)
 
 

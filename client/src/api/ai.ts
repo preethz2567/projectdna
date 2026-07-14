@@ -53,4 +53,23 @@ export const generateRecommendations = (projectId: string) =>
 export const generateImprovements2 = (projectId: string) =>
   api.post(`${base(projectId)}/generate/improvements`, {}).then(r => r.data);
 
+export const generateDiagram = (projectId: string, diagram_type: string) =>
+  api.post(`${base(projectId)}/generate/diagram`, { diagram_type }).then(r => r.data);
 
+export const getDiagrams = (projectId: string) =>
+  api.get(`${base(projectId)}/diagrams`).then(r => r.data);
+
+export const generateQuiz = (projectId: string, difficulty: string) =>
+  api.post(`${base(projectId)}/generate/quiz`, { difficulty }).then(r => r.data);
+
+export const generateDeck = (projectId: string, deck_type: string) =>
+  api.post(`${base(projectId)}/generate/deck`, { deck_type }).then(r => r.data);
+
+export const getHealthScore = (projectId: string) =>
+  api.get(`${base(projectId)}/health-score`).then(r => r.data);
+
+export const diffAnalyze = (projectId: string) =>
+  api.post(`${base(projectId)}/diff-analyze`, {}).then(r => r.data);
+
+export const compressMemory = (projectId: string) =>
+  api.post(`${base(projectId)}/compress-memory`, {}).then(r => r.data);

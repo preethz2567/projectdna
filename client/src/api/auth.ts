@@ -7,3 +7,6 @@ export const login = (data: { email: string; password: string }) =>
   api.post('/auth/login', data).then(r => r.data);
 
 export const getMe = () => api.get('/auth/me').then(r => r.data);
+
+export const updateProfile = (data: { display_name: string }) => 
+  api.put('/auth/me', data).then(r => r.data);
