@@ -1,33 +1,12 @@
-import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useStore } from '../store/useStore';
-
-// Custom hook for Scroll Reveal Animations
-function useInView(threshold = 0.1) {
-  const ref = React.useRef<HTMLDivElement>(null);
-  const [inView, setInView] = React.useState(false);
-  
-  React.useEffect(() => {
-    const observer = new IntersectionObserver(([entry]) => {
-      if (entry.isIntersecting) setInView(true);
-    }, { threshold });
-    
-    if (ref.current) observer.observe(ref.current);
-    return () => observer.disconnect();
-  }, [threshold]);
-  
-  return { ref, inView };
-}
 
 export default function Home() {
   const navigate = useNavigate();
   const { user } = useStore();
 
-  const pipelineInView = useInView(0.2);
-  const capabilitiesInView = useInView(0.1);
-
   return (
-    <div style={{ background: '#ffffff', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+    <div style={{ background: '#ffffff', minHeight: '100vh', display: 'flex', flexDirection: 'column', overflowY: 'auto' }}>
       <style>{`
         @keyframes slideDown {
           from { transform: translateY(-100%); opacity: 0; }
@@ -74,24 +53,13 @@ export default function Home() {
           box-shadow: 16px 20px 0px #000000 !important;
           z-index: 10 !important;
         }
-
-        .scroll-reveal {
-          opacity: 0;
-          transform: translateY(40px);
-          transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-        .scroll-reveal.visible {
-          opacity: 1;
-          transform: translateY(0);
-        }
       `}</style>
       
       {/* Editorial Navbar (Grey) */}
       <nav className="anim-slide-down" style={{ 
         display: 'flex', alignItems: 'center', justifyContent: 'space-between', 
         padding: '0 48px', height: 80, background: '#f3f4f6', 
-        borderBottom: '1px solid #e5e7eb',
-        position: 'fixed', top: 0, left: 0, right: 0, zIndex: 100
+        borderBottom: '1px solid #e5e7eb'
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -115,9 +83,9 @@ export default function Home() {
         </div>
       </nav>
 
-      {/* SECTION 1: HERO (White - Sticky for Parallax) */}
-      <section style={{ background: '#ffffff', minHeight: '100vh', display: 'flex', alignItems: 'center', position: 'sticky', top: 0, zIndex: 1, padding: '0 48px' }}>
-        <div style={{ maxWidth: 1200, margin: '80px auto 0 auto', display: 'flex', alignItems: 'center', gap: 64, width: '100%' }}>
+      {/* SECTION 1: HERO (White) */}
+      <section style={{ background: '#ffffff', padding: '140px 48px', position: 'relative' }}>
+        <div style={{ maxWidth: 1200, margin: '0 auto', display: 'flex', alignItems: 'center', gap: 64 }}>
           <div style={{ flex: 1 }}>
             <div className="anim-fade-in-up" style={{ 
               fontFamily: 'var(--font-mono)', fontSize: 12, fontWeight: 600, color: 'var(--accent)', 
@@ -149,7 +117,7 @@ export default function Home() {
                </button>
             </div>
             
-            <div className="anim-fade-in-up anim-delay-3" style={{ display: 'flex', gap: 32, marginTop: 64, borderTop: '1px solid var(--border)', paddingTop: 24 }}>
+            <div style={{ display: 'flex', gap: 32, marginTop: 64, borderTop: '1px solid var(--border)', paddingTop: 24 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: 'var(--text-muted)', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                 <span style={{ color: 'var(--accent)' }}>●</span> NO CREDIT CARD REQUIRED
               </div>
@@ -169,16 +137,11 @@ export default function Home() {
         </div>
       </section>
 
-      {/* SECTION 2: PIPELINE (Navy Blue - Sticky Stacking) */}
-      <section ref={pipelineInView.ref} style={{ background: 'var(--accent)', color: 'white', minHeight: '100vh', display: 'flex', alignItems: 'center', position: 'sticky', top: 0, zIndex: 2, padding: '80px 48px', overflow: 'hidden', boxShadow: '0 -20px 40px rgba(0,0,0,0.1)' }}>
-        
-        {/* Dramatic Slanted SVG Divider covering Hero section */}
-        <svg viewBox="0 0 1440 120" style={{ position: 'absolute', top: 0, left: 0, width: '100%', transform: 'translateY(-99%)', zIndex: -1 }}>
-           <path fill="var(--accent)" d="M0,120 L1440,0 L1440,120 Z"></path>
-        </svg>
-
-        <div style={{ maxWidth: 1200, margin: '0 auto', width: '100%' }}>
-          <div className={`scroll-reveal ${pipelineInView.inView ? 'visible' : ''}`} style={{ textAlign: 'center', marginBottom: 60 }}>
+      {/* SECTION 2: PIPELINE (Navy Blue + Black Shadows) */}
+      <section style={{ background: 'var(--accent)', color: 'white', padding: '140px 48px', overflow: 'hidden' }}>
+        <div style={{ maxWidth: 1200, margin: '0 auto' }}>
+          
+          <div style={{ textAlign: 'center', marginBottom: 60 }}>
             <div style={{ fontFamily: 'var(--font-mono)', fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,0.8)', letterSpacing: '0.15em', textTransform: 'uppercase', marginBottom: 16 }}>
               OPERATIONS PIPELINE
             </div>
@@ -190,10 +153,10 @@ export default function Home() {
           <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '40px 0' }}>
             
             {/* Card 1: Left */}
-            <div className={`hover-card hover-card-left scroll-reveal ${pipelineInView.inView ? 'visible' : ''}`} style={{ 
+            <div className="hover-card hover-card-left" style={{ 
               width: 320, height: 340, background: '#ffffff', borderRadius: 24, border: '1px solid #e5e5e5',
               boxShadow: '6px 8px 0px #000000', padding: '32px 24px', display: 'flex', flexDirection: 'column', alignItems: 'center',
-              transform: pipelineInView.inView ? 'rotate(-5deg)' : 'rotate(-15deg) translateY(60px)', zIndex: 1, marginRight: '-30px', position: 'relative', transitionDelay: '0.1s'
+              transform: 'rotate(-5deg)', zIndex: 1, marginRight: '-30px', position: 'relative'
             }}>
               <div style={{ fontSize: 9, color: '#888', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8, fontWeight: 700, fontFamily: 'var(--font-mono)' }}>
                 SEAMLESS INTEGRATION
@@ -214,10 +177,10 @@ export default function Home() {
             </div>
 
             {/* Card 2: Center */}
-            <div className={`hover-card hover-card-center scroll-reveal ${pipelineInView.inView ? 'visible' : ''}`} style={{ 
+            <div className="hover-card hover-card-center" style={{ 
               width: 320, height: 340, background: '#ffffff', borderRadius: 24, border: '1px solid #e5e5e5',
               boxShadow: '6px 8px 0px #000000', padding: '32px 24px', display: 'flex', flexDirection: 'column', alignItems: 'center',
-              transform: pipelineInView.inView ? 'translateY(-20px)' : 'translateY(80px)', zIndex: 2, position: 'relative', transitionDelay: '0.2s'
+              transform: 'translateY(-20px)', zIndex: 2, position: 'relative'
             }}>
               <div style={{ fontSize: 9, color: '#888', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8, fontWeight: 700, fontFamily: 'var(--font-mono)' }}>
                 ADVANCED INTELLIGENCE
@@ -239,10 +202,10 @@ export default function Home() {
             </div>
 
             {/* Card 3: Right */}
-            <div className={`hover-card hover-card-right scroll-reveal ${pipelineInView.inView ? 'visible' : ''}`} style={{ 
+            <div className="hover-card hover-card-right" style={{ 
               width: 320, height: 340, background: '#ffffff', borderRadius: 24, border: '1px solid #e5e5e5',
               boxShadow: '6px 8px 0px #000000', padding: '32px 24px', display: 'flex', flexDirection: 'column', alignItems: 'center',
-              transform: pipelineInView.inView ? 'rotate(6deg)' : 'rotate(15deg) translateY(60px)', zIndex: 1, marginLeft: '-30px', position: 'relative', transitionDelay: '0.3s'
+              transform: 'rotate(6deg)', zIndex: 1, marginLeft: '-30px', position: 'relative'
             }}>
               <div style={{ fontSize: 9, color: '#888', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8, fontWeight: 700, fontFamily: 'var(--font-mono)' }}>
                 INSTANT READINESS
@@ -263,14 +226,15 @@ export default function Home() {
               </svg>
             </div>
           </div>
+          
         </div>
       </section>
 
-      {/* SECTION 3: CAPABILITIES TABLE (Dark - Sticky Stacking) */}
-      <section ref={capabilitiesInView.ref} style={{ background: 'var(--surface-dark)', color: 'white', minHeight: '100vh', display: 'flex', alignItems: 'center', position: 'relative', zIndex: 3, padding: '80px 48px', boxShadow: '0 -20px 40px rgba(0,0,0,0.4)' }}>
-        <div style={{ maxWidth: 1200, margin: '0 auto', width: '100%' }}>
+      {/* SECTION 3: CAPABILITIES TABLE (Dark) */}
+      <section style={{ background: 'var(--surface-dark)', color: 'white', padding: '140px 48px' }}>
+        <div style={{ maxWidth: 1200, margin: '0 auto' }}>
           
-          <div className={`scroll-reveal ${capabilitiesInView.inView ? 'visible' : ''}`} style={{ marginBottom: 64 }}>
+          <div style={{ marginBottom: 64 }}>
             <div style={{ fontFamily: 'var(--font-mono)', fontSize: 11, fontWeight: 700, color: 'var(--accent)', letterSpacing: '0.15em', textTransform: 'uppercase', marginBottom: 16 }}>
               SPECIFICATION SHEETS
             </div>
@@ -279,7 +243,7 @@ export default function Home() {
             </h2>
           </div>
 
-          <div className={`scroll-reveal ${capabilitiesInView.inView ? 'visible' : ''}`} style={{ border: '1px solid #333', borderRadius: 8, overflow: 'hidden', background: '#0a0a0a', transitionDelay: '0.2s' }}>
+          <div style={{ border: '1px solid #333', borderRadius: 8, overflow: 'hidden', background: '#0a0a0a' }}>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr 3fr', padding: '16px 24px', background: '#141414', borderBottom: '1px solid #333', fontFamily: 'var(--font-mono)', fontSize: 11, fontWeight: 700, color: '#a3a3a3', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
               <div>SYS ID</div>
               <div>INTELLIGENCE MODULE</div>
@@ -300,7 +264,7 @@ export default function Home() {
             ))}
           </div>
         </div>
-      </section>ion>
+      </section>
 
       {/* SECTION 4: CTA PORTAL (Navy Blue) */}
       <section style={{ background: 'var(--accent)', color: 'white', padding: '120px 48px', position: 'relative', overflow: 'hidden' }}>
