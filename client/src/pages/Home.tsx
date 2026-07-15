@@ -6,7 +6,7 @@ export default function Home() {
   const { user } = useStore();
 
   return (
-    <div style={{ background: '#ffffff', minHeight: '100vh', display: 'flex', flexDirection: 'column', overflowY: 'auto' }}>
+    <div style={{ background: '#faf9f6', minHeight: '100vh', display: 'flex', flexDirection: 'column', overflowY: 'auto' }}>
       <style>{`
         @keyframes slideDown {
           from { transform: translateY(-100%); opacity: 0; }
@@ -83,8 +83,8 @@ export default function Home() {
         </div>
       </nav>
 
-      {/* SECTION 1: HERO (White) */}
-      <section style={{ background: '#ffffff', padding: '140px 48px', position: 'relative' }}>
+      {/* SECTION 1: HERO (Ivory) */}
+      <section style={{ background: '#faf9f6', padding: '140px 48px', position: 'relative' }}>
         <div style={{ maxWidth: 1200, margin: '0 auto', display: 'flex', alignItems: 'center', gap: 64 }}>
           <div style={{ flex: 1 }}>
             <div className="anim-fade-in-up" style={{ 
@@ -138,8 +138,14 @@ export default function Home() {
       </section>
 
       {/* SECTION 2: PIPELINE (Navy Blue + Black Shadows) */}
-      <section style={{ background: 'var(--accent)', color: 'white', padding: '140px 48px', overflow: 'hidden' }}>
-        <div style={{ maxWidth: 1200, margin: '0 auto' }}>
+      <section style={{ background: 'var(--accent)', color: 'white', padding: '140px 48px', position: 'relative' }}>
+        
+        {/* Slanted Section Divider (Slopes UP to the right) */}
+        <svg viewBox="0 0 1440 120" style={{ position: 'absolute', top: 0, left: 0, width: '100%', transform: 'translateY(-99%)', zIndex: 0 }} preserveAspectRatio="none">
+           <path fill="var(--accent)" d="M0,120 L1440,0 L1440,120 Z"></path>
+        </svg>
+
+        <div style={{ maxWidth: 1200, margin: '0 auto', position: 'relative', zIndex: 1 }}>
           
           <div style={{ textAlign: 'center', marginBottom: 60 }}>
             <div style={{ fontFamily: 'var(--font-mono)', fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,0.8)', letterSpacing: '0.15em', textTransform: 'uppercase', marginBottom: 16 }}>
@@ -165,14 +171,17 @@ export default function Home() {
                 Instantly map<br/>any codebase
               </div>
               <svg width="160" height="160" viewBox="0 0 200 200" fill="none" stroke="#222" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{ marginTop: 'auto' }}>
-                <path d="M40 100 Q 20 80 40 60 M160 100 Q 180 80 160 60 M50 140 Q 30 150 50 160 M150 140 Q 170 150 150 160" stroke="#bbb" />
-                <circle cx="100" cy="70" r="15" fill="#fff" />
-                <path d="M85 70 C 85 50 115 50 115 70" fill="#222" />
-                <path d="M100 85 v40" />
-                <path d="M100 95 l-20 20 m20 -20 l20 20" />
-                <path d="M80 145 l 20 -10 l 20 10" />
-                <rect x="80" y="110" width="40" height="25" rx="2" fill="#222" />
-                <path d="M70 135 h60" strokeWidth="4" />
+                <path d="M30 60 h30 M30 60 v60 M30 90 h20 M30 120 h30" />
+                <rect x="60" y="50" width="20" height="20" rx="4" fill="#fff" />
+                <rect x="50" y="80" width="20" height="20" rx="4" fill="#fff" />
+                <rect x="60" y="110" width="20" height="20" rx="4" fill="#fff" />
+                
+                <path d="M100 90 h20 l-5 -5 M120 90 l-5 5" stroke="#bbb" />
+                
+                <circle cx="160" cy="60" r="12" fill="#fff" />
+                <circle cx="140" cy="110" r="12" fill="#fff" />
+                <circle cx="180" cy="110" r="12" fill="#fff" />
+                <path d="M160 72 v15 M160 87 h-20 v8 M160 87 h20 v8" />
               </svg>
             </div>
 
@@ -189,15 +198,15 @@ export default function Home() {
                 Deep structural<br/>code indexing
               </div>
               <svg width="160" height="160" viewBox="0 0 200 200" fill="none" stroke="#222" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{ marginTop: 'auto' }}>
-                <path d="M60 160 h20 v-20 h20 v-20 h20 v-20 h20" stroke="#222" />
-                <path d="M50 150 Q 40 130 60 110" stroke="#bbb" strokeDasharray="4 4" />
-                <circle cx="90" cy="70" r="12" fill="#fff" />
-                <path d="M78 70 C 78 55 102 55 102 70" fill="#222" />
-                <path d="M90 82 v30" />
-                <path d="M90 112 l-10 28 M90 112 l15 8 v20" />
-                <path d="M90 90 l-20 10 l10 10 M90 90 l20 5 l-5 15" />
-                <path d="M40 105 h70 l20 5 l-20 5 h-70 z" fill="#fff" />
-                <path d="M110 105 v10" />
+                <rect x="40" y="40" width="80" height="100" rx="8" fill="#fff" />
+                <path d="M40 60 h80" />
+                <path d="M50 75 h20 M50 90 h40 M50 105 h30 M50 120 h15" strokeWidth="4" />
+                
+                <path d="M120 90 c 20 0, 20 -20, 40 -20" stroke="#bbb" strokeDasharray="4 4" />
+                <path d="M120 90 c 20 0, 20 20, 40 20" stroke="#bbb" strokeDasharray="4 4" />
+                
+                <rect x="150" y="60" width="30" height="20" rx="4" fill="#222" stroke="none" />
+                <rect x="150" y="100" width="30" height="20" rx="4" fill="#fff" />
               </svg>
             </div>
 
@@ -214,15 +223,15 @@ export default function Home() {
                 Interactive mastery<br/>& export
               </div>
               <svg width="160" height="160" viewBox="0 0 200 200" fill="none" stroke="#222" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{ marginTop: 'auto' }}>
-                <circle cx="70" cy="70" r="12" fill="#fff" />
-                <path d="M58 70 C 58 55 82 55 82 70" fill="#222" />
-                <path d="M70 82 v40 M70 122 l-15 30 M70 122 l10 30" />
-                <path d="M70 95 l-20 15 M70 95 l30 -25" />
-                <circle cx="130" cy="70" r="12" fill="#fff" />
-                <path d="M118 70 C 118 55 142 55 142 70" fill="#222" />
-                <path d="M130 82 v40 M130 122 l-10 30 M130 122 l15 30" />
-                <path d="M130 95 l20 15 M130 95 l-30 -25" />
-                <path d="M100 60 l0 -10 M90 65 l-8 -8 M110 65 l8 -8" stroke="#bbb" />
+                <rect x="60" y="40" width="80" height="100" rx="8" fill="#e5e5e5" transform="rotate(10 100 90)" />
+                <rect x="50" y="50" width="80" height="100" rx="8" fill="#ffffff" transform="rotate(-5 90 100)" />
+                <rect x="70" y="60" width="80" height="100" rx="8" fill="#ffffff" />
+                
+                <path d="M85 85 h50" />
+                <path d="M85 105 h30" />
+                
+                <circle cx="150" cy="140" r="16" fill="#222" stroke="none" />
+                <path d="M143 140 l 5 5 l 10 -10" stroke="#fff" />
               </svg>
             </div>
           </div>
@@ -231,8 +240,14 @@ export default function Home() {
       </section>
 
       {/* SECTION 3: CAPABILITIES TABLE (Dark) */}
-      <section style={{ background: 'var(--surface-dark)', color: 'white', padding: '140px 48px' }}>
-        <div style={{ maxWidth: 1200, margin: '0 auto' }}>
+      <section style={{ background: 'var(--surface-dark)', color: 'white', padding: '140px 48px', position: 'relative' }}>
+        
+        {/* Slanted Section Divider (Slopes DOWN to the right) */}
+        <svg viewBox="0 0 1440 120" style={{ position: 'absolute', top: 0, left: 0, width: '100%', transform: 'translateY(-99%)', zIndex: 0 }} preserveAspectRatio="none">
+           <path fill="var(--surface-dark)" d="M0,0 L1440,120 L0,120 Z"></path>
+        </svg>
+
+        <div style={{ maxWidth: 1200, margin: '0 auto', position: 'relative', zIndex: 1 }}>
           
           <div style={{ marginBottom: 64 }}>
             <div style={{ fontFamily: 'var(--font-mono)', fontSize: 11, fontWeight: 700, color: 'var(--accent)', letterSpacing: '0.15em', textTransform: 'uppercase', marginBottom: 16 }}>
@@ -268,13 +283,8 @@ export default function Home() {
 
       {/* SECTION 4: CTA PORTAL (Navy Blue) */}
       <section style={{ background: 'var(--accent)', color: 'white', padding: '120px 48px', position: 'relative', overflow: 'hidden' }}>
-        <div style={{ position: 'absolute', top: 32, left: 32, fontFamily: 'var(--font-mono)', fontSize: 10, opacity: 0.5, letterSpacing: '0.1em' }}>GRID: [A-1]</div>
-        <div style={{ position: 'absolute', bottom: 32, right: 32, fontFamily: 'var(--font-mono)', fontSize: 10, opacity: 0.5, letterSpacing: '0.1em' }}>EST_SYS: ACTIVE</div>
         
         <div style={{ maxWidth: 800, margin: '0 auto', textAlign: 'center' }}>
-          <div style={{ fontFamily: 'var(--font-mono)', fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,0.7)', letterSpacing: '0.15em', textTransform: 'uppercase', marginBottom: 24 }}>
-            DEPLOYMENT PORTAL
-          </div>
           <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: 56, fontWeight: 400, lineHeight: 1.1, marginBottom: 24 }}>
             Ready to Master Your <span style={{ fontStyle: 'italic', fontWeight: 600 }}>Codebase?</span>
           </h2>
@@ -284,10 +294,6 @@ export default function Home() {
           <button className="btn" style={{ background: 'white', color: 'var(--accent)', borderRadius: 4, padding: '18px 48px', fontSize: 13, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', border: 'none' }} onClick={() => navigate('/register')}>
             START FREE REVISION
           </button>
-          
-          <div style={{ marginTop: 32, fontSize: 11, fontFamily: 'var(--font-mono)', color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
-            3 FREE PROJECTS INCLUDED <span style={{ margin: '0 12px' }}>•</span> NO CREDIT CARD REQUIRED
-          </div>
         </div>
       </section>
       
@@ -337,11 +343,6 @@ export default function Home() {
               </ul>
             </div>
 
-          </div>
-          
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontFamily: 'var(--font-mono)', fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-            <div>© 2026 PROJECTDNA. ALL RIGHTS RESERVED.</div>
-            <div>PRODUCT CODE: V3.2-PROD</div>
           </div>
         </div>
       </footer>
