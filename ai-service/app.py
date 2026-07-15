@@ -43,7 +43,8 @@ def index_repository():
 
         return jsonify({'status': 'indexed', 'chunks': count, 'repository_id': repository_id})
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        import traceback
+        return jsonify({'error': traceback.format_exc()}), 500
 
 
 # Chat
@@ -128,6 +129,69 @@ def generate_architecture():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+
+@app.route('/generate/revision', methods=['POST'])
+def generate_revision():
+    try:
+        from agents import revision_agent
+        data = request.json
+        result = revision_agent(
+            repository_id=data['repository_id'],
+            experiences=data.get('experiences', []),
+            questions=data.get('questions', [])
+        )
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/generate/recommendations', methods=['POST'])
+def generate_recommendations():
+    try:
+        from agents import recommendations_agent
+        data = request.json
+        result = recommendations_agent(user_projects=data.get('projects', []))
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/generate/diagram', methods=['POST'])
+def generate_diagram():
+    try:
+        from agents import diagram_agent
+        data = request.json
+        result = diagram_agent(
+            repository_id=data['repository_id'],
+            diagram_type=data.get('diagram_type', 'architecture')
+        )
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/generate/quiz', methods=['POST'])
+def generate_quiz():
+    try:
+        from agents import quiz_agent
+        data = request.json
+        result = quiz_agent(
+            repository_id=data['repository_id'],
+            difficulty=data.get('difficulty', 'medium')
+        )
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/generate/deck', methods=['POST'])
+def generate_deck():
+    try:
+        from agents import deck_agent
+        data = request.json
+        result = deck_agent(
+            repository_id=data['repository_id'],
+            deck_type=data.get('deck_type', 'technical')
+        )
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=int(os.getenv('PORT', 5001)), debug=False)

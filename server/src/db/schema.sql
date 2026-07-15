@@ -23,6 +23,7 @@ CREATE TABLE IF NOT EXISTS project_members (
   project_id UUID REFERENCES projects(id) ON DELETE CASCADE,
   user_id UUID REFERENCES users(id) ON DELETE CASCADE,
   role TEXT NOT NULL CHECK (role IN ('owner', 'member', 'mentor')),
+  status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'accepted')),
   joined_at TIMESTAMPTZ DEFAULT NOW(),
   PRIMARY KEY (project_id, user_id)
 );
@@ -63,6 +64,16 @@ CREATE TABLE IF NOT EXISTS documents (
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW(),
   UNIQUE(project_id, doc_type)
+);
+
+CREATE TABLE IF NOT EXISTS diagrams (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  project_id UUID NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+  diagram_type TEXT NOT NULL CHECK (diagram_type IN ('architecture', 'database', 'flow', 'sequence')),
+  code TEXT NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW(),
+  UNIQUE(project_id, diagram_type)
 );
 
 CREATE TABLE IF NOT EXISTS tasks (

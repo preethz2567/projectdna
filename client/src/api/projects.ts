@@ -27,3 +27,15 @@ export const deleteTask = (projectId: string, taskId: string) =>
 
 export const inviteMember = (projectId: string, email: string, role: string) =>
   api.post(`/projects/${projectId}/members`, { email, role }).then(r => r.data);
+
+export const getPendingInvitations = () =>
+  api.get('/projects/invitations/pending').then(r => r.data);
+
+export const acceptInvitation = (projectId: string) =>
+  api.post(`/projects/invitations/${projectId}/accept`).then(r => r.data);
+
+export const declineInvitation = (projectId: string) =>
+  api.post(`/projects/invitations/${projectId}/decline`).then(r => r.data);
+
+export const deleteProject = (projectId: string) =>
+  api.delete(`/projects/${projectId}`).then(r => r.data);

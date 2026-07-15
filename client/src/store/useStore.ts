@@ -23,6 +23,7 @@ interface AppState {
   token: string | null;
   currentProject: Project | null;
   setUser: (user: User, token: string) => void;
+  updateUser: (user: Partial<User>) => void;
   setCurrentProject: (project: Project) => void;
   logout: () => void;
 }
@@ -35,6 +36,7 @@ export const useStore = create<AppState>((set) => ({
     localStorage.setItem('pdna_token', token);
     set({ user, token });
   },
+  updateUser: (updatedFields) => set((state) => ({ user: state.user ? { ...state.user, ...updatedFields } : null })),
   setCurrentProject: (project) => set({ currentProject: project }),
   logout: () => {
     localStorage.removeItem('pdna_token');

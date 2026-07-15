@@ -2,6 +2,8 @@ import { useParams } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { getDocuments, generateDoc } from '../../api/ai';
 import { useState } from 'react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 const DOC_TYPES = [
   { key: 'overview', label: 'Overview' },
@@ -69,12 +71,14 @@ export default function Documents() {
           {selected ? (
             <>
               <div className="flex-between mb-4">
-                <h3 style={{ fontSize: 15, fontWeight: 600 }}>{selected.title}</h3>
+                <h3 style={{ fontSize: 18, fontWeight: 700, fontFamily: 'var(--font-heading)' }}>{selected.title}</h3>
                 <span className="text-muted" style={{ fontSize: 11 }}>Updated {new Date(selected.updated_at).toLocaleString()}</span>
               </div>
-              <pre style={{ fontFamily: 'var(--mono)', fontSize: 12, whiteSpace: 'pre-wrap', lineHeight: 1.7 }}>
-                {selected.content}
-              </pre>
+              <div style={{ lineHeight: 1.6, fontSize: 14 }}>
+                <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                  {selected.content}
+                </ReactMarkdown>
+              </div>
             </>
           ) : (
             <div className="empty-state">

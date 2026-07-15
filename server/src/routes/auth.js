@@ -41,4 +41,19 @@ router.get('/me', require('../middleware/auth').authenticate, async (req, res) =
   res.json(result.rows[0]);
 });
 
+router.put('/me', require('../middleware/auth').authenticate, async (req, res) => {
+  try {
+    const { display_name } = req.body;
+    if (!display_name) return res.status(400).json({ error: 'Display name is required' });
+    
+    const result = await pool.query(
+      'UPDATE users SET display_name = $1 WHERE id = $2 RETURNING id, email, display_name, role, avatar_url, created_at',
+      [display_name, req.user.id]
+    );
+    res.json(result.rows[0]);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 module.exports = router;

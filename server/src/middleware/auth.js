@@ -27,6 +27,7 @@ async function requireProjectAccess(req, res, next) {
     'SELECT role FROM project_members WHERE project_id = $1 AND user_id = $2',
     [projectId, req.user.id]
   );
+  console.log(`[AUTH DEBUG] requireProjectAccess check: projectId=${projectId}, userId=${req.user.id}, rows=${result.rows.length}`);
   if (result.rows.length === 0) return res.status(403).json({ error: 'No project access' });
   req.projectRole = result.rows[0].role;
   next();
