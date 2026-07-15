@@ -57,13 +57,12 @@ export default function Home() {
       
       {/* Editorial Navbar (Grey) */}
       <nav className="anim-slide-down" style={{ 
-        position: 'fixed', top: 0, left: 0, width: '100%', zIndex: 50,
         display: 'flex', alignItems: 'center', justifyContent: 'space-between', 
-        padding: '0 48px', height: 70, background: '#f7f3ef41', 
-        borderBottom: '1.5px solid #131212ff'
+        padding: '0 48px', height: 80, background: '#f3f4f6', 
+        borderBottom: '1px solid #e5e7eb'
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#1E3A8A" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
             <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
             <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
             <line x1="12" y1="22.08" x2="12" y2="12"></line>
@@ -74,22 +73,22 @@ export default function Home() {
         </div>
         <div style={{ display: 'flex', gap: '24px', alignItems: 'center' }}>
           {user ? (
-            <button className="btn" style={{ background: 'var(--text)', color: 'white', borderRadius: 0, padding: '8px 24px', fontWeight: 600, fontSize: 13, textTransform: 'uppercase', letterSpacing: '0.05em' }} onClick={() => navigate('/dashboard')}>Console</button>
+            <button className="btn" style={{ background: 'var(--text)', color: 'white', borderRadius: 0, padding: '10px 24px', fontWeight: 600, fontSize: 13, textTransform: 'uppercase', letterSpacing: '0.05em' }} onClick={() => navigate('/dashboard')}>Console</button>
           ) : (
             <>
-              <button className="btn" style={{ background: 'transparent', color: 'var(--text)', border: 'none', padding: '8px 0', fontSize: 14, fontWeight: 600 }} onClick={() => navigate('/login')}>Sign In</button>
-              <button className="btn" style={{ background: 'var(--text)', color: 'white', borderRadius: 0, padding: '8px 24px', fontSize: 13, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }} onClick={() => navigate('/register')}>Get Started</button>
+              <button className="btn" style={{ background: 'transparent', color: 'var(--text)', border: 'none', padding: '10px 0', fontSize: 14, fontWeight: 600 }} onClick={() => navigate('/login')}>Sign In</button>
+              <button className="btn" style={{ background: 'var(--text)', color: 'white', borderRadius: 0, padding: '10px 24px', fontSize: 13, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }} onClick={() => navigate('/register')}>Get Started</button>
             </>
           )}
         </div>
       </nav>
 
       {/* SECTION 1: HERO (Ivory) */}
-      <section style={{ background: '#faf9f6', padding: '120px 48px 240px 48px', minHeight: '100vh', display: 'flex', alignItems: 'center', position: 'relative' }}>
-        <div style={{ maxWidth: 1200, margin: '0 auto', display: 'flex', alignItems: 'center', gap: 64, width: '100%' }}>
+      <section style={{ background: '#faf9f6', padding: '140px 48px', position: 'relative' }}>
+        <div style={{ maxWidth: 1200, margin: '0 auto', display: 'flex', alignItems: 'center', gap: 64 }}>
           <div style={{ flex: 1 }}>
             <div className="anim-fade-in-up" style={{ 
-              fontFamily: 'var(--font-mono)', fontSize: 12, fontWeight: 600, color: '#1E3A8A', 
+              fontFamily: 'var(--font-mono)', fontSize: 12, fontWeight: 600, color: 'var(--accent)', 
               letterSpacing: '0.15em', textTransform: 'uppercase', marginBottom: 24,
               border: '1px solid var(--border)', padding: '6px 12px', display: 'inline-block',
               background: '#fafafa'
@@ -102,7 +101,7 @@ export default function Home() {
               letterSpacing: '-0.02em', lineHeight: 1.05, marginBottom: 32, fontWeight: 400 
             }}>
               Codebase Mastery,<br/>
-              <span style={{ color: '#1E3A8A', fontStyle: 'italic', fontWeight: 700 }}>Automated.</span>
+              <span style={{ color: 'var(--accent)', fontStyle: 'italic', fontWeight: 700 }}>Automated.</span>
             </h1>
             
             <p className="anim-fade-in-up anim-delay-2" style={{ fontFamily: 'var(--font-sans)', fontSize: 18, color: 'var(--text-secondary)', lineHeight: 1.7, maxWidth: 500, marginBottom: 48, fontWeight: 400 }}>
@@ -113,7 +112,7 @@ export default function Home() {
                <button className="btn" style={{ background: 'var(--accent)', color: 'white', borderRadius: 4, padding: '16px 32px', fontSize: 15, fontWeight: 600, border: 'none' }} onClick={() => navigate('/register')}>
                  Start Free Workspace
                </button>
-               <button className="btn" style={{ background: 'transparent', color: 'var(--text)', border: '2px solid var(--text)', borderRadius: 4, padding: '16px 32px', fontSize: 15, fontWeight: 700 }}>
+               <button className="btn" style={{ background: 'transparent', color: 'var(--text)', border: '1px solid var(--border)', borderRadius: 4, padding: '16px 32px', fontSize: 15, fontWeight: 600 }}>
                  Learn More
                </button>
             </div>
@@ -138,7 +137,6 @@ export default function Home() {
         </div>
       </section>
 
-
       {/* SECTION 2: PIPELINE (Navy Blue + Black Shadows) */}
       <section style={{ background: 'var(--accent)', color: 'white', padding: '140px 48px', position: 'relative' }}>
         
@@ -149,16 +147,16 @@ export default function Home() {
 
         <div style={{ maxWidth: 1200, margin: '0 auto', position: 'relative', zIndex: 1 }}>
           
-          <div style={{ textAlign: 'center', marginBottom: 40 }}>
+          <div style={{ textAlign: 'center', marginBottom: 60 }}>
             <div style={{ fontFamily: 'var(--font-mono)', fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,0.8)', letterSpacing: '0.15em', textTransform: 'uppercase', marginBottom: 16 }}>
               OPERATIONS PIPELINE
             </div>
-            <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: 48, fontWeight: 400, lineHeight: 1.1, color: '#faf9f6' }}>
+            <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: 48, fontWeight: 400, lineHeight: 1.1 }}>
               High-Speed <span style={{ fontStyle: 'italic', fontWeight: 600 }}>Revision Process</span>
             </h2>
           </div>
           
-          <div style={{ display: 'flex', justifySelf: 'center', justifyContent: 'center', alignItems: 'center', padding: '20px 0' }}>
+          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '40px 0' }}>
             
             {/* Card 1: Left */}
             <div className="hover-card hover-card-left" style={{ 
@@ -167,14 +165,11 @@ export default function Home() {
               transform: 'rotate(-5deg)', zIndex: 1, marginRight: '-30px', position: 'relative'
             }}>
               <div style={{ fontSize: 9, color: '#888', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8, fontWeight: 700, fontFamily: 'var(--font-mono)' }}>
-                MERMAID.JS ENGINE
+                SEAMLESS INTEGRATION
               </div>
-              <div style={{ fontSize: 20, color: '#111', fontWeight: 600, textAlign: 'center', lineHeight: 1.3, marginBottom: 8, fontFamily: 'var(--font-heading)' }}>
-                Auto-Generated<br/>Flowcharts
+              <div style={{ fontSize: 20, color: '#111', fontWeight: 600, textAlign: 'center', lineHeight: 1.3, marginBottom: 24, fontFamily: 'var(--font-heading)' }}>
+                Instantly map<br/>any codebase
               </div>
-              <p style={{ fontSize: 13, color: '#666', textAlign: 'center', lineHeight: 1.5, margin: '0 8px 16px 8px' }}>
-                Instantly parse your repository into interactive system architecture diagrams.
-              </p>
               <svg width="160" height="160" viewBox="0 0 200 200" fill="none" stroke="#222" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{ marginTop: 'auto' }}>
                 <path d="M30 60 h30 M30 60 v60 M30 90 h20 M30 120 h30" />
                 <rect x="60" y="50" width="20" height="20" rx="4" fill="#fff" />
@@ -197,14 +192,11 @@ export default function Home() {
               transform: 'translateY(-20px)', zIndex: 2, position: 'relative'
             }}>
               <div style={{ fontSize: 9, color: '#888', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8, fontWeight: 700, fontFamily: 'var(--font-mono)' }}>
-                SPACED REPETITION
+                ADVANCED INTELLIGENCE
               </div>
-              <div style={{ fontSize: 20, color: '#111', fontWeight: 600, textAlign: 'center', lineHeight: 1.3, marginBottom: 8, fontFamily: 'var(--font-heading)' }}>
-                Contextual<br/>Flashcards
+              <div style={{ fontSize: 20, color: '#111', fontWeight: 600, textAlign: 'center', lineHeight: 1.3, marginBottom: 24, fontFamily: 'var(--font-heading)' }}>
+                Deep structural<br/>code indexing
               </div>
-              <p style={{ fontSize: 13, color: '#666', textAlign: 'center', lineHeight: 1.5, margin: '0 8px 16px 8px' }}>
-                Test your knowledge on your exact business logic with AI-generated QA flashcards.
-              </p>
               <svg width="160" height="160" viewBox="0 0 200 200" fill="none" stroke="#222" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{ marginTop: 'auto' }}>
                 <rect x="40" y="40" width="80" height="100" rx="8" fill="#fff" />
                 <path d="M40 60 h80" />
@@ -225,14 +217,11 @@ export default function Home() {
               transform: 'rotate(6deg)', zIndex: 1, marginLeft: '-30px', position: 'relative'
             }}>
               <div style={{ fontSize: 9, color: '#888', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8, fontWeight: 700, fontFamily: 'var(--font-mono)' }}>
-                TECHNICAL GRILLING
+                INSTANT READINESS
               </div>
-              <div style={{ fontSize: 20, color: '#111', fontWeight: 600, textAlign: 'center', lineHeight: 1.3, marginBottom: 8, fontFamily: 'var(--font-heading)' }}>
-                Simulated Mock<br/>Interviews
+              <div style={{ fontSize: 20, color: '#111', fontWeight: 600, textAlign: 'center', lineHeight: 1.3, marginBottom: 24, fontFamily: 'var(--font-heading)' }}>
+                Interactive mastery<br/>& export
               </div>
-              <p style={{ fontSize: 13, color: '#666', textAlign: 'center', lineHeight: 1.5, margin: '0 8px 16px 8px' }}>
-                Simulate technical viva interviews designed strictly around your architecture choices.
-              </p>
               <svg width="160" height="160" viewBox="0 0 200 200" fill="none" stroke="#222" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{ marginTop: 'auto' }}>
                 <rect x="60" y="40" width="80" height="100" rx="8" fill="#e5e5e5" transform="rotate(10 100 90)" />
                 <rect x="50" y="50" width="80" height="100" rx="8" fill="#ffffff" transform="rotate(-5 90 100)" />
@@ -251,7 +240,7 @@ export default function Home() {
       </section>
 
       {/* SECTION 3: CAPABILITIES TABLE (Dark) */}
-      <section style={{ background: 'var(--surface-dark)', color: 'white', padding: '80px 48px', position: 'relative' }}>
+      <section style={{ background: 'var(--surface-dark)', color: 'white', padding: '140px 48px', position: 'relative' }}>
         
         {/* Slanted Section Divider (Slopes DOWN to the right) */}
         <svg viewBox="0 0 1440 120" style={{ position: 'absolute', top: 0, left: 0, width: '100%', transform: 'translateY(-99%)', zIndex: 0 }} preserveAspectRatio="none">
@@ -260,8 +249,8 @@ export default function Home() {
 
         <div style={{ maxWidth: 1200, margin: '0 auto', position: 'relative', zIndex: 1 }}>
           
-          <div style={{ marginBottom: 40 }}>
-            <div style={{ fontFamily: 'var(--font-mono)', fontSize: 11, fontWeight: 700, color: '#1E3A8A', letterSpacing: '0.15em', textTransform: 'uppercase', marginBottom: 16 }}>
+          <div style={{ marginBottom: 64 }}>
+            <div style={{ fontFamily: 'var(--font-mono)', fontSize: 11, fontWeight: 700, color: 'var(--accent)', letterSpacing: '0.15em', textTransform: 'uppercase', marginBottom: 16 }}>
               SPECIFICATION SHEETS
             </div>
             <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: 48, fontWeight: 400, lineHeight: 1.1, color: '#ffffff' }}>
@@ -280,10 +269,9 @@ export default function Home() {
               { id: 'SYS 01 00', title: 'Topology & Architecture Generation', desc: 'Translates raw codebase folders and dependencies into high-fidelity Mermaid.js flowcharts and system diagrams.' },
               { id: 'SYS 02 00', title: 'Contextual Flashcard Quizzes', desc: 'Parses business logic and database schemas to automatically generate targeted QA flashcards with success-rate tracking.' },
               { id: 'SYS 03 00', title: 'Mock Interview Sandbox', desc: 'Simulates HR, Technical, and Architecture interviews tailored strictly to the technologies and patterns used in your repository.' },
-              { id: 'SYS 04 00', title: 'Automated Code Review', desc: 'Scans syntax for security vulnerabilities, performance bottlenecks, and structural anomalies, generating actionable audit reports.' },
-              { id: 'SYS 05 00', title: 'Infrastructure as Code', desc: 'Ship your backend to ECS Fargate and RDS instantly using pre-configured Terraform modules. Complete with VPCs, least-privilege IAM roles, and S3 state management.' }
-            ].map((row, i, arr) => (
-              <div key={i} style={{ display: 'grid', gridTemplateColumns: '1fr 2fr 3fr', padding: '24px', borderBottom: i === arr.length - 1 ? 'none' : '1px solid #262626', alignItems: 'center', transition: 'background 0.2s', cursor: 'pointer', background: i % 2 === 0 ? 'transparent' : '#111111' }} onMouseOver={e => e.currentTarget.style.background = '#1a1a1a'} onMouseOut={e => e.currentTarget.style.background = i % 2 === 0 ? 'transparent' : '#111111'}>
+              { id: 'SYS 04 00', title: 'Automated Code Review', desc: 'Scans syntax for security vulnerabilities, performance bottlenecks, and structural anomalies, generating actionable audit reports.' }
+            ].map((row, i) => (
+              <div key={i} style={{ display: 'grid', gridTemplateColumns: '1fr 2fr 3fr', padding: '24px', borderBottom: i === 3 ? 'none' : '1px solid #262626', alignItems: 'center', transition: 'background 0.2s', cursor: 'pointer', background: i % 2 === 0 ? 'transparent' : '#111111' }} onMouseOver={e => e.currentTarget.style.background = '#1a1a1a'} onMouseOut={e => e.currentTarget.style.background = i % 2 === 0 ? 'transparent' : '#111111'}>
                 <div style={{ fontFamily: 'var(--font-mono)', fontSize: 12, fontWeight: 700, color: '#60a5fa' }}>{row.id}</div>
                 <div style={{ fontSize: 15, fontWeight: 600, color: '#f3f4f6' }}>{row.title}</div>
                 <div style={{ fontSize: 14, color: '#9ca3af', lineHeight: 1.6 }}>{row.desc}</div>
@@ -294,13 +282,13 @@ export default function Home() {
       </section>
 
       {/* SECTION 4: CTA PORTAL (Navy Blue) */}
-      <section style={{ background: 'var(--accent)', color: 'white', padding: '80px 48px', position: 'relative', overflow: 'hidden' }}>
+      <section style={{ background: 'var(--accent)', color: 'white', padding: '120px 48px', position: 'relative', overflow: 'hidden' }}>
         
         <div style={{ maxWidth: 800, margin: '0 auto', textAlign: 'center' }}>
-          <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: 56, fontWeight: 400, lineHeight: 1.1, marginBottom: 16, color: '#faf9f6' }}>
+          <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: 56, fontWeight: 400, lineHeight: 1.1, marginBottom: 24 }}>
             Ready to Master Your <span style={{ fontStyle: 'italic', fontWeight: 600 }}>Codebase?</span>
           </h2>
-          <p style={{ fontSize: 18, color: 'rgba(255,255,255,0.8)', marginBottom: 32, lineHeight: 1.6, maxWidth: 600, margin: '0 auto 32px auto' }}>
+          <p style={{ fontSize: 18, color: 'rgba(255,255,255,0.8)', marginBottom: 48, lineHeight: 1.6, maxWidth: 600, margin: '0 auto 48px auto' }}>
             Optimize your revision bandwidth. Sync your repository, generate documentation, and ace your viva presentations.
           </p>
           <button className="btn" style={{ background: 'white', color: 'var(--accent)', borderRadius: 4, padding: '18px 48px', fontSize: 13, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', border: 'none' }} onClick={() => navigate('/register')}>
@@ -309,27 +297,27 @@ export default function Home() {
         </div>
       </section>
       
-      {/* SECTION 5: EDITORIAL FOOTER (Ivory) */}
-      <footer style={{ background: '#faf9f6', color: 'var(--text-secondary)', padding: '48px 48px 24px 48px', borderTop: '1px solid #e5e5e5' }}>
+      {/* SECTION 5: EDITORIAL FOOTER (Black) */}
+      <footer style={{ background: '#050505', color: '#737373', padding: '80px 48px 40px 48px' }}>
         <div style={{ maxWidth: 1200, margin: '0 auto' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr', gap: 64, borderBottom: '1px solid #e5e5e5', paddingBottom: 48, marginBottom: 32 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr', gap: 64, borderBottom: '1px solid #171717', paddingBottom: 64, marginBottom: 40 }}>
             
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: 24 }}>
                 <div style={{ width: 24, height: 24, background: 'var(--accent)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <span style={{ color: 'white', fontFamily: 'var(--font-heading)', fontSize: 14, fontWeight: 700 }}>P</span>
                 </div>
-                <span style={{ fontFamily: 'var(--font-mono)', fontSize: 14, fontWeight: 700, letterSpacing: '0.05em', color: 'var(--text)' }}>
+                <span style={{ fontFamily: 'var(--font-mono)', fontSize: 14, fontWeight: 700, letterSpacing: '0.05em', color: 'white' }}>
                   ProjectDNA
                 </span>
               </div>
-              <p style={{ fontSize: 14, lineHeight: 1.6, maxWidth: 300, color: 'var(--text-muted)' }}>
+              <p style={{ fontSize: 14, lineHeight: 1.6, maxWidth: 300 }}>
                 B2B machine learning solutions built specifically to map codebases and automate engineering documentation.
               </p>
             </div>
 
             <div>
-              <h4 style={{ fontFamily: 'var(--font-mono)', fontSize: 11, fontWeight: 700, color: 'var(--text)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 24 }}>Systems Engine</h4>
+              <h4 style={{ fontFamily: 'var(--font-mono)', fontSize: 11, fontWeight: 700, color: 'white', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 24 }}>Systems Engine</h4>
               <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 16, fontSize: 14 }}>
                 <li>Architecture Mapping</li>
                 <li>Logic Extraction</li>
@@ -338,7 +326,7 @@ export default function Home() {
             </div>
 
             <div>
-              <h4 style={{ fontFamily: 'var(--font-mono)', fontSize: 11, fontWeight: 700, color: 'var(--text)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 24 }}>Platform</h4>
+              <h4 style={{ fontFamily: 'var(--font-mono)', fontSize: 11, fontWeight: 700, color: 'white', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 24 }}>Platform</h4>
               <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 16, fontSize: 14 }}>
                 <li>Security Core</li>
                 <li>API Integration</li>
@@ -347,7 +335,7 @@ export default function Home() {
             </div>
 
             <div>
-              <h4 style={{ fontFamily: 'var(--font-mono)', fontSize: 11, fontWeight: 700, color: 'var(--text)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 24 }}>Compliance</h4>
+              <h4 style={{ fontFamily: 'var(--font-mono)', fontSize: 11, fontWeight: 700, color: 'white', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 24 }}>Compliance</h4>
               <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 16, fontSize: 14 }}>
                 <li>Data Protection</li>
                 <li>Terms of Service</li>
