@@ -59,7 +59,7 @@ export default function Home() {
       <nav className="anim-slide-down" style={{ 
         display: 'flex', alignItems: 'center', justifyContent: 'space-between', 
         padding: '0 48px', height: 80, background: '#f3f4f6', 
-        borderBottom: '1px solid #e5e7eb'
+        borderBottom: '2px solid #cdd2daff'
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
