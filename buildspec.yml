@@ -1,0 +1,41 @@
+version: 0.2
+
+env:
+  variables:
+    AWS_REGION: "ap-south-1"
+
+phases:
+  pre_build:
+    commands:
+      - echo Logging in to Amazon ECR...
+      - ECR_REGISTRY=$(aws sts get-caller-identity --query Account --output text).dkr.ecr.$AWS_REGION.amazonaws.com
+      - aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ECR_REGISTRY
+      - IMAGE_TAG=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
+      - echo Image tag is $IMAGE_TAG
+
+  build:
+    commands:
+      - echo Building Node backend + React frontend image...
+      - docker build -t $ECR_REGISTRY/projectdna:$IMAGE_TAG .
+      - docker tag $ECR_REGISTRY/projectdna:$IMAGE_TAG $ECR_REGISTRY/projectdna:latest
+
+      - echo Building AI service image...
+      - docker build -t $ECR_REGISTRY/projectdna-ai:$IMAGE_TAG ./ai-service
+      - docker tag $ECR_REGISTRY/projectdna-ai:$IMAGE_TAG $ECR_REGISTRY/projectdna-ai:latest
+
+  post_build:
+    commands:
+      - echo Pushing images to ECR...
+      - docker push $ECR_REGISTRY/projectdna:$IMAGE_TAG
+      - docker push $ECR_REGISTRY/projectdna:latest
+      - docker push $ECR_REGISTRY/projectdna-ai:$IMAGE_TAG
+      - docker push $ECR_REGISTRY/projectdna-ai:latest
+
+      - echo Writing imagedefinitions.json for ECS deployment...
+      - printf '[{"name":"node-backend","imageUri":"%s"},{"name":"ai-service","imageUri":"%s"}]' $ECR_REGISTRY/projectdna:$IMAGE_TAG $ECR_REGISTRY/projectdna-ai:$IMAGE_TAG > imagedefinitions.json
+
+      - echo Build complete.
+
+artifacts:
+  files:
+    - imagedefinitions.json

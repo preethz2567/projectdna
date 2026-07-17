@@ -19,9 +19,9 @@
   --text-inverse: #ffffff;
   
   /* Accent */
-  --accent: #1E3A8A; /* Deep Navy */
+  --accent: #172554; /* Darker Navy */
   --accent-light: #eff6ff;
-  --accent-border: #1E3A8A;
+  --accent-border: #172554;
   
   /* Status Colors */
   --error: #ef4444;
