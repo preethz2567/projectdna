@@ -22,7 +22,7 @@
 - **Project Deletion**: Added a "Delete" button with a confirmation dialog to project cards on the Dashboard to allow owners to fully remove workspaces.
 
 ## Backend & AI Fixes
-- **RAG Subsystem**: Resolved deep-seated parsing bugs in `rag.py` that caused indexing failures on complex repositories (like Spring Boot Java repos). Fixed the payload structure so Python processes JSON objects properly rather than failing on string paths.
+- **RAG Subsystem & Source Code Indexing**: Completely overhauled the repository ingestion engine in `rag.py`. The AI now performs deep, recursive traversal of all source files within a connected repository, reading the actual code to generate a comprehensive embedding map of the architecture. Resolved deep-seated parsing bugs that caused indexing failures on complex repositories (like Spring Boot Java repos) by fixing the payload structure so Python processes JSON objects properly.
 - **Port Collisions**: Adjusted the Python AI service ports (`5001` vs `5002`) to ensure flawless integration without address-in-use errors.
 
 ## Additional Features (Interactive Architecture & Learning)

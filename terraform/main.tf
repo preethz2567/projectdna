@@ -14,7 +14,10 @@ provider "aws" {
 # ── Use default VPC (same as memory-gallery) ────────────────────────────
 data "aws_vpc" "default" { default = true }
 data "aws_subnets" "default" {
-  filter { name = "vpc-id" values = [data.aws_vpc.default.id] }
+  filter {
+    name   = "vpc-id"
+    values = [data.aws_vpc.default.id]
+  }
 }
 
 # ── Security group: ECS tasks ────────────────────────────────────────────
@@ -43,48 +46,23 @@ resource "aws_security_group" "ecs_sg" {
   }
 }
 
-# ── Security group: RDS ──────────────────────────────────────────────────
-resource "aws_security_group" "rds_sg" {
-  name        = "projectdna-rds-sg"
-  description = "Allow PostgreSQL only from ECS tasks"
-  vpc_id      = data.aws_vpc.default.id
-
-  ingress {
-    from_port       = 5432
-    to_port         = 5432
-    protocol        = "tcp"
-    security_groups = [aws_security_group.ecs_sg.id]
-  }
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
+# ── Reference existing RDS (memory-gallery) instead of creating a new one ─
+# This saves ~$15/mo by reusing the existing db.t3.micro instance.
+# The "projectdna" database must be created manually inside this instance:
+#   psql -h <endpoint> -U postgres -c "CREATE DATABASE projectdna;"
+data "aws_db_instance" "existing" {
+  db_instance_identifier = "memory-gallery-db"
 }
 
-# ── RDS PostgreSQL ───────────────────────────────────────────────────────
-resource "aws_db_subnet_group" "default" {
-  name       = "projectdna-subnet-group"
-  subnet_ids = data.aws_subnets.default.ids
-}
-
-resource "aws_db_instance" "postgres" {
-  identifier             = "projectdna-db"
-  engine                 = "postgres"
-  engine_version         = "15"
-  instance_class         = "db.t3.micro"
-  allocated_storage      = 20
-  db_name                = "projectdna"
-  username               = "postgres"
-  password               = var.db_password
-  db_subnet_group_name   = aws_db_subnet_group.default.name
-  vpc_security_group_ids = [aws_security_group.rds_sg.id]
-  publicly_accessible    = false
-  skip_final_snapshot    = true
-  multi_az               = false
-
-  tags = { Name = "projectdna-db" }
+# Allow ECS tasks to reach the existing RDS on port 5432
+# This adds an ingress rule to the memory-gallery RDS security group
+resource "aws_security_group_rule" "ecs_to_rds" {
+  type                     = "ingress"
+  from_port                = 5432
+  to_port                  = 5432
+  protocol                 = "tcp"
+  source_security_group_id = aws_security_group.ecs_sg.id
+  security_group_id        = tolist(data.aws_db_instance.existing.vpc_security_groups)[0]
 }
 
 # ── S3 bucket for FAISS indexes ──────────────────────────────────────────
@@ -193,7 +171,7 @@ resource "aws_ecs_task_definition" "app" {
       environment = [
         { name = "NODE_ENV",        value = "production" },
         { name = "PORT",            value = "3000" },
-        { name = "DB_HOST",         value = aws_db_instance.postgres.address },
+        { name = "DB_HOST",         value = data.aws_db_instance.existing.address },
         { name = "DB_PORT",         value = "5432" },
         { name = "DB_NAME",         value = "projectdna" },
         { name = "DB_USER",         value = "postgres" },

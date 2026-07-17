@@ -1,6 +1,6 @@
 output "rds_endpoint" {
-  description = "The hostname of the RDS PostgreSQL instance"
-  value       = aws_db_instance.postgres.address
+  description = "The hostname of the shared RDS PostgreSQL instance (memory-gallery-db)"
+  value       = data.aws_db_instance.existing.address
   sensitive   = true
 }
 
