@@ -5,13 +5,18 @@ phases:
     runtime-versions:
       nodejs: 20
     commands:
+      - echo "Current directory = $(pwd)"
+      - echo "Source dir = $CODEBUILD_SRC_DIR"
+      - ls -la
+      - cd $CODEBUILD_SRC_DIR
+      - ls -la
       - echo Installing server dependencies...
       - cd server && npm ci
 
   build:
     commands:
       - echo Running server tests...
-      - cd server && npm test
+      - cd $CODEBUILD_SRC_DIR/server && npm test
 
   post_build:
     commands:
