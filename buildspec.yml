@@ -7,7 +7,9 @@ env:
 phases:
   pre_build:
     commands:
-      - echo Logging in to Amazon ECR...
+      - echo Running tests...
+      - cd server && npm ci --include=dev && npm test && cd ..
+      - echo Tests passed. Logging in to Amazon ECR...
       - ECR_REGISTRY=$(aws sts get-caller-identity --query Account --output text).dkr.ecr.$AWS_REGION.amazonaws.com
       - aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ECR_REGISTRY
       - IMAGE_TAG=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
@@ -31,11 +33,7 @@ phases:
       - docker push $ECR_REGISTRY/projectdna-ai:$IMAGE_TAG
       - docker push $ECR_REGISTRY/projectdna-ai:latest
 
-      - echo Writing imagedefinitions.json for ECS deployment...
-      - printf '[{"name":"node-backend","imageUri":"%s"},{"name":"ai-service","imageUri":"%s"}]' $ECR_REGISTRY/projectdna:$IMAGE_TAG $ECR_REGISTRY/projectdna-ai:$IMAGE_TAG > imagedefinitions.json
-
-      - echo Build complete.
-
-artifacts:
-  files:
-    - imagedefinitions.json
+      - echo Triggering ECS deployment...
+      - aws ecs update-service --cluster projectdna-cluster --service projectdna-service --force-new-deployment --region $AWS_REGION
+      
+      - echo Build and deploy complete!
