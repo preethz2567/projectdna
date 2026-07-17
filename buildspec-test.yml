@@ -1,0 +1,18 @@
+version: 0.2
+
+phases:
+  install:
+    runtime-versions:
+      nodejs: 20
+    commands:
+      - echo Installing server dependencies...
+      - cd server && npm ci
+
+  build:
+    commands:
+      - echo Running server tests...
+      - cd server && npm test
+
+  post_build:
+    commands:
+      - echo Test phase complete.
