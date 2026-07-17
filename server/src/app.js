@@ -78,7 +78,15 @@ app.use('/api/projects/:projectId/tasks', taskRoutes);
 app.use('/api/projects/:projectId/events', sseRoutes);
 app.use('/api/projects/:projectId/ai', aiRoutes);
 
+const path = require('path');
+
 app.get('/health', (req, res) => res.json({ status: 'ok' }));
+
+// Serve React frontend
+app.use(express.static(path.join(__dirname, '../public')));
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, '../public/index.html'));
+});
 
 app.use((err, req, res, next) => {
   console.error(err.message);
