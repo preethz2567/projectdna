@@ -83,24 +83,29 @@ export default function Notes() {
       </div>
 
       {showForm && (
-        <div className="modal-overlay" onClick={() => setShowForm(false)}>
-          <div className="modal" style={{ maxWidth: 500 }} onClick={e => e.stopPropagation()}>
-            <h3>New note</h3>
-            <form onSubmit={handleSave}>
-              <div className="form-group">
-                <label className="form-label">Title</label>
-                <input className="form-input" value={form.title}
-                  onChange={e => setForm(f => ({ ...f, title: e.target.value }))} required />
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(15, 23, 42, 0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999 }} onClick={() => setShowForm(false)}>
+          <div style={{ background: '#fff', borderRadius: 12, width: '100%', maxWidth: 500, padding: 32, boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)' }} onClick={e => e.stopPropagation()}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
+              <h3 style={{ margin: 0, fontSize: 20, fontWeight: 700, color: '#0f172a' }}>New note</h3>
+              <button onClick={() => setShowForm(false)} style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: '#64748b' }}>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+              </button>
+            </div>
+            <form onSubmit={handleSave} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+              <div>
+                <label style={{ display: 'block', fontSize: 14, fontWeight: 600, color: '#334155', marginBottom: 6 }}>Title</label>
+                <input style={{ width: '100%', padding: '10px 12px', border: '1px solid #cbd5e1', borderRadius: 6, fontSize: 15 }} value={form.title}
+                  onChange={e => setForm(f => ({ ...f, title: e.target.value }))} required placeholder="Note title..." />
               </div>
-              <div className="form-group">
-                <label className="form-label">Content</label>
-                <textarea className="form-input" rows={8} value={form.content}
+              <div>
+                <label style={{ display: 'block', fontSize: 14, fontWeight: 600, color: '#334155', marginBottom: 6 }}>Content</label>
+                <textarea style={{ width: '100%', padding: '10px 12px', border: '1px solid #cbd5e1', borderRadius: 6, fontSize: 15, minHeight: 120, fontFamily: 'var(--font)' }} value={form.content}
                   onChange={e => setForm(f => ({ ...f, content: e.target.value }))}
                   placeholder="Your notes, observations, decisions, anything..." />
               </div>
-              <div className="modal-footer">
-                <button type="button" className="btn btn-secondary" onClick={() => setShowForm(false)}>Cancel</button>
-                <button type="submit" className="btn btn-primary" disabled={saving}>
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 12, marginTop: 16 }}>
+                <button type="button" onClick={() => setShowForm(false)} style={{ padding: '10px 16px', background: 'transparent', border: '1px solid #cbd5e1', borderRadius: 6, color: '#475569', fontWeight: 600, cursor: 'pointer' }}>Cancel</button>
+                <button type="submit" disabled={saving} style={{ padding: '10px 16px', background: '#2563eb', border: 'none', borderRadius: 6, color: '#fff', fontWeight: 600, cursor: 'pointer' }}>
                   {saving ? 'Saving...' : 'Save note'}
                 </button>
               </div>

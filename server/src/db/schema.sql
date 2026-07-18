@@ -81,7 +81,7 @@ CREATE TABLE IF NOT EXISTS tasks (
   project_id UUID NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
   title TEXT NOT NULL,
   description TEXT,
-  status TEXT DEFAULT 'todo' CHECK (status IN ('todo', 'in_progress', 'done')),
+  status TEXT DEFAULT 'todo' CHECK (status IN ('backlog', 'todo', 'in_progress', 'done')),
   priority TEXT DEFAULT 'medium' CHECK (priority IN ('low', 'medium', 'high')),
   assigned_to UUID REFERENCES users(id),
   created_by UUID NOT NULL REFERENCES users(id),

@@ -15,6 +15,7 @@ export default function Diagrams() {
   const [activeType, setActiveType] = useState('architecture');
   const [diagrams, setDiagrams] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [rawCode, setRawCode] = useState(false);
 
   useEffect(() => {
@@ -29,9 +30,12 @@ export default function Diagrams() {
 
   async function handleGenerate() {
     setLoading(true);
+    setError(null);
     try {
       const r = await generateDiagram(projectId!, activeType);
       setDiagrams(prev => ({ ...prev, [activeType]: r.diagram }));
+    } catch (err: any) {
+      setError(err.message || 'Sorry! Diagram could not be generated. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -130,6 +134,16 @@ export default function Diagrams() {
         </div>
 
         {loading && <div className="loading">Generating diagram... the AI is analyzing your project structure</div>}
+
+        {error && (
+          <div style={{ background: '#fef2f2', border: '1px solid #fca5a5', padding: '16px 20px', borderRadius: 8, marginBottom: 24, display: 'flex', gap: 12, alignItems: 'flex-start' }}>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ef4444" strokeWidth="2" style={{ flexShrink: 0 }}><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+            <div>
+              <div style={{ fontWeight: 600, color: '#991b1b', fontSize: 15, marginBottom: 4 }}>Sorry! Diagram couldn't be generated</div>
+              <div style={{ color: '#b91c1c', fontSize: 14 }}>{error}</div>
+            </div>
+          </div>
+        )}
 
         {currentDiagram && !loading && (
           <div className="card">
