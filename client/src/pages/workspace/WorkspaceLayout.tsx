@@ -93,8 +93,8 @@ export default function WorkspaceLayout() {
       <div className={`sidebar ${sidebarOpen ? 'open' : ''}`}>
         {/* Brand */}
         <div className="sidebar-brand">
-          <div className="sidebar-brand-name" onClick={() => navigate('/dashboard')}>
-            <div className="sidebar-brand-logo">P</div>
+          <div className="sidebar-brand-name" onClick={() => navigate('/dashboard')} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
             ProjectDNA
           </div>
           <div className="sidebar-project-name">{project?.title}</div>
@@ -123,7 +123,7 @@ export default function WorkspaceLayout() {
         {/* User */}
         <div className="sidebar-footer">
           <div className="sidebar-user">{user?.display_name}</div>
-          <button className="btn btn-secondary btn-sm" onClick={logout}>Sign out</button>
+          <button style={{ background: '#ffffff', color: '#0f172a', border: 'none', padding: '8px 12px', borderRadius: 4, cursor: 'pointer', fontWeight: 600, fontSize: 13, width: '100%', transition: 'background 0.2s', marginTop: 12 }} onMouseOver={e=>e.currentTarget.style.background='#f1f5f9'} onMouseOut={e=>e.currentTarget.style.background='#ffffff'} onClick={logout}>Sign out</button>
         </div>
       </div>
 

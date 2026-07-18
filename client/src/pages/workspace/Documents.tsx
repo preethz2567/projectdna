@@ -1,7 +1,7 @@
 import { useParams } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { getDocuments, generateDoc } from '../../api/ai';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
@@ -22,17 +22,29 @@ export default function Documents() {
   const qc = useQueryClient();
   const [generating, setGenerating] = useState<string | null>(null);
   const [selected, setSelected] = useState<Doc | null>(null);
+  const [autoSelectType, setAutoSelectType] = useState<string | null>(null);
 
   const { data: docs = [] } = useQuery({
     queryKey: ['documents', projectId],
     queryFn: () => getDocuments(projectId!)
   });
 
+  useEffect(() => {
+    if (autoSelectType && docs.length > 0) {
+      const newlyGen = (docs as Doc[]).find(d => d.doc_type === autoSelectType);
+      if (newlyGen) {
+        setSelected(newlyGen);
+        setAutoSelectType(null);
+      }
+    }
+  }, [docs, autoSelectType]);
+
   async function handleGenerate(docType: string) {
     setGenerating(docType);
     try {
       await generateDoc(projectId!, docType);
-      qc.invalidateQueries({ queryKey: ['documents', projectId] });
+      await qc.invalidateQueries({ queryKey: ['documents', projectId] });
+      setAutoSelectType(docType);
     } finally {
       setGenerating(null);
     }

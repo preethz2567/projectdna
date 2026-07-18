@@ -4,15 +4,20 @@ import { getProject } from '../../api/projects';
 import { getTimeline, generateArchitecture } from '../../api/ai';
 import { useState } from 'react';
 import { useStore } from '../../store/useStore';
+import api from '../../api/client';
 
 export default function Overview() {
   const { projectId } = useParams<{ projectId: string }>();
   const [arch, setArch] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showScoreReason, setShowScoreReason] = useState(false);
   const { user } = useStore();
 
   const { data: project } = useQuery({ queryKey: ['project', projectId], queryFn: () => getProject(projectId!) });
   const { data: timeline } = useQuery({ queryKey: ['timeline', projectId], queryFn: () => getTimeline(projectId!) });
+  const { data: healthData } = useQuery({ queryKey: ['health', projectId], queryFn: () => api.get(`/projects/${projectId}/ai/health-score`).then(r => r.data).catch(() => ({ score: 0 })) });
+
+  const healthScore = healthData?.score || 0;
 
   async function handleGenerateArch() {
     setLoading(true);
@@ -41,10 +46,42 @@ export default function Overview() {
         {/* Stat Cards */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '24px', marginBottom: '32px' }}>
           {[
-            { title: 'HEALTH SCORE', value: '87', sub: '/100', footer: <div style={{ height: 4, background: 'var(--border)', width: '100%', marginTop: 8 }}><div style={{ width: '87%', height: '100%', background: 'var(--accent)' }}/></div> },
-            { title: 'CHUNKS INDEXED', value: '12', sub: '', footer: <div className="text-muted" style={{ fontSize: 11, marginTop: 8 }}>+2 since yesterday</div> },
-            { title: 'DOCS GENERATED', value: '3', sub: '', footer: <div className="text-muted" style={{ fontSize: 11, marginTop: 8 }}>Architecture, PRD, Technical</div> },
-            { title: 'ACTIVE TASKS', value: '5', sub: <span style={{ fontSize: 12, color: 'var(--accent)', marginLeft: 8 }}>80% Done</span>, footer: <div style={{ display: 'flex', gap: 4, marginTop: 8 }}><div style={{flex:1, height:4, background:'var(--accent)'}}/><div style={{flex:1, height:4, background:'var(--accent)'}}/><div style={{flex:1, height:4, background:'var(--accent)'}}/><div style={{flex:1, height:4, background:'var(--border)'}}/></div> }
+            { 
+              title: 'HEALTH SCORE', 
+              value: healthScore.toString(), 
+              sub: '/100', 
+              footer: (
+                <div>
+                  <div style={{ height: 4, background: 'var(--border)', width: '100%', marginTop: 8 }}>
+                    <div style={{ width: `${healthScore}%`, height: '100%', background: 'var(--accent)' }}/>
+                  </div>
+                  <button onClick={() => setShowScoreReason(true)} style={{ marginTop: 12, fontSize: 11, fontWeight: 700, color: 'var(--accent)', background: 'transparent', border: 'none', cursor: 'pointer', padding: 0 }}>KNOW WHY?</button>
+                </div>
+              ) 
+            },
+            { 
+              title: 'CHUNKS INDEXED', 
+              value: (healthData?.signals?.chunks_indexed || 0).toString(), 
+              sub: '', 
+              footer: <div className="text-muted" style={{ fontSize: 11, marginTop: 8 }}>Total source code chunks</div> 
+            },
+            { 
+              title: 'DOCS GENERATED', 
+              value: (healthData?.signals?.docs_generated || 0).toString(), 
+              sub: '', 
+              footer: <div className="text-muted" style={{ fontSize: 11, marginTop: 8 }}>Architecture, API, etc.</div> 
+            },
+            { 
+              title: 'ACTIVE TASKS', 
+              value: (healthData?.signals?.tasks_total || 0).toString(), 
+              sub: <span style={{ fontSize: 12, color: 'var(--accent)', marginLeft: 8 }}>{healthData?.signals?.tasks_total > 0 ? Math.round((healthData.signals.tasks_done / healthData.signals.tasks_total) * 100) : 0}% Done</span>, 
+              footer: <div style={{ display: 'flex', gap: 4, marginTop: 8 }}>
+                {Array.from({ length: 4 }).map((_, idx) => {
+                   const progress = healthData?.signals?.tasks_total > 0 ? (healthData.signals.tasks_done / healthData.signals.tasks_total) : 0;
+                   return <div key={idx} style={{flex:1, height:4, background: progress > (idx/4) ? 'var(--accent)' : 'var(--border)'}}/>
+                })}
+              </div> 
+            }
           ].map((stat, i) => (
             <div key={i} style={{ background: 'var(--surface)', border: '1px solid var(--border)', padding: '24px', display: 'flex', flexDirection: 'column' }}>
               <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-secondary)', marginBottom: 16 }}>{stat.title}</div>
@@ -119,6 +156,23 @@ export default function Overview() {
         </div>
 
       </div>
+
+      {showScoreReason && (
+        <div className="modal-overlay" onClick={() => setShowScoreReason(false)} style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999 }}>
+          <div className="modal-content" onClick={e => e.stopPropagation()} style={{ background: 'var(--bg)', padding: 32, borderRadius: 12, border: '1px solid var(--border)', maxWidth: 450, width: '100%', position: 'relative', boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)' }}>
+             <button onClick={() => setShowScoreReason(false)} style={{ position: 'absolute', top: 16, right: 16, background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--text-muted)' }}>
+               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+             </button>
+             <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
+               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+               <h3 style={{ margin: 0, fontSize: 18, color: 'var(--text)' }}>Why this score?</h3>
+             </div>
+             <p style={{ fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.6, margin: 0 }}>
+               Your AI Health Score of <strong style={{ color: 'var(--accent)' }}>{healthScore}/100</strong> reflects your project's maturity. Points are earned by connecting a repository ({healthData?.breakdown?.repository || 0} pts), generating documentation ({healthData?.breakdown?.documentation || 0} pts), completing tasks ({healthData?.breakdown?.tasks || 0} pts), and participating in AI mock interviews and feedback sessions.
+             </p>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
