@@ -70,7 +70,7 @@ export default function WorkspaceLayout() {
   const { projectId } = useParams<{ projectId: string }>();
   const [project, setProject] = useState<{ title: string; description: string } | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const { logout, user } = useStore();
+  const { logout } = useStore();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -122,8 +122,7 @@ export default function WorkspaceLayout() {
 
         {/* User */}
         <div className="sidebar-footer">
-          <div className="sidebar-user">{user?.display_name}</div>
-          <button style={{ background: '#ffffff', color: '#0f172a', border: 'none', padding: '8px 12px', borderRadius: 4, cursor: 'pointer', fontWeight: 600, fontSize: 13, width: '100%', transition: 'background 0.2s', marginTop: 12 }} onMouseOver={e=>e.currentTarget.style.background='#f1f5f9'} onMouseOut={e=>e.currentTarget.style.background='#ffffff'} onClick={logout}>Sign out</button>
+          <button style={{ background: '#ffffff', color: '#0f172a', border: 'none', padding: '8px 12px', borderRadius: 4, cursor: 'pointer', fontWeight: 600, fontSize: 13, width: '100%', transition: 'background 0.2s' }} onMouseOver={e=>e.currentTarget.style.background='#f1f5f9'} onMouseOut={e=>e.currentTarget.style.background='#ffffff'} onClick={logout}>Sign out</button>
         </div>
       </div>
 

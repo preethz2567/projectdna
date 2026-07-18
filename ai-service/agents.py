@@ -441,11 +441,11 @@ def deck_agent(repository_id: str, deck_type: str = 'technical') -> dict:
     }
 
     theme_map = {
-        'technical': 'navy',
-        'demo': 'purple',
-        'interview': 'teal'
+        'technical': 'light',
+        'demo': 'navy',
+        'interview': 'light'
     }
-    base_theme = theme_map.get(deck_type, 'navy')
+    base_theme = theme_map.get(deck_type, 'light')
 
     system_prompt = f"""You are a professional presentation designer creating a stunning Gamma-style deck.
 Generate {deck_configs.get(deck_type, deck_configs['technical'])}.
@@ -496,11 +496,12 @@ STRICT RULES:
 - Last slide must be type "title" with theme "accent" — key takeaways
 - bullets must be a JSON array of strings, NEVER a single string
 - Do NOT use emojis anywhere in the output. Emojis are strictly forbidden. Use the `icon` field instead.
-- Keep each slide to 3-5 bullets maximum
+- Keep each slide to 3-5 bullets maximum. Make bullets precise, technical, and informative — not vague.
 - code_snippet must be actual, relevant code from the project context — not pseudocode
 - notes is what the presenter SAYS — different from bullets
 - Be 100% specific to THIS project — real names, real tech, real decisions
-- Do NOT use placeholder text like "Project Name" — use the actual project name""" + ANTI_HALLUCINATION_RULES
+- Do NOT use placeholder text like "Project Name" — use the actual project name
+- Write professional, formal technical English. No casual language, no marketing fluff.
 
     user_message = f"{context}\n\nGenerate a professional {deck_type} presentation deck."
     raw = call_llm(system_prompt, user_message, max_tokens=4000)

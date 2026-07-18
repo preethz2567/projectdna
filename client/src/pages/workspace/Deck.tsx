@@ -21,8 +21,8 @@ const THEMES: Record<string, { bg: string; text: string; accent: string; card: s
   purple: { bg: 'radial-gradient(circle at 0% 100%, #581c87 0%, #09090b 100%)', text: '#f8fafc', accent: '#c084fc', card: 'rgba(255,255,255,0.04)', border: 'rgba(255,255,255,0.08)' },
   teal:   { bg: 'radial-gradient(circle at 50% 50%, #064e3b 0%, #022c22 100%)', text: '#f8fafc', accent: '#34d399', card: 'rgba(255,255,255,0.04)', border: 'rgba(255,255,255,0.08)' },
   dark:   { bg: 'linear-gradient(180deg, #18181b 0%, #000000 100%)', text: '#e2e8f0', accent: '#a1a1aa', card: 'rgba(255,255,255,0.03)', border: 'rgba(255,255,255,0.05)' },
-  light:  { bg: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)', text: '#0f172a', accent: '#3b82f6', card: '#ffffff', border: 'rgba(0,0,0,0.05)' },
-  accent: { bg: 'linear-gradient(135deg, #2563eb 0%, #4f46e5 100%)', text: '#ffffff', accent: '#fbbf24', card: 'rgba(0,0,0,0.1)', border: 'rgba(255,255,255,0.2)' },
+  light:  { bg: 'linear-gradient(160deg, #ffffff 0%, #f1f5f9 100%)', text: '#0f172a', accent: '#2563eb', card: '#f8fafc', border: 'rgba(0,0,0,0.07)' },
+  accent: { bg: 'linear-gradient(135deg, #1e40af 0%, #4338ca 100%)', text: '#ffffff', accent: '#fbbf24', card: 'rgba(0,0,0,0.1)', border: 'rgba(255,255,255,0.2)' },
 };
 
 // ── Icon Graphic ─────────────────────────────────────────────────────────
@@ -338,25 +338,31 @@ export default function Deck() {
         <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
           <select className="form-input" style={{ width: 'auto', padding: '6px 10px', fontSize: 13 }}
             value={deckType} onChange={e => setDeckType(e.target.value)}>
-            <option value="technical">🔧 Technical (for engineers)</option>
-            <option value="demo">🎯 Demo (for judges / clients)</option>
-            <option value="interview">🎓 Interview / Viva</option>
+            <option value="technical">Technical — For Engineers</option>
+            <option value="demo">Demo — For Judges / Clients</option>
+            <option value="interview">Interview / Viva Prep</option>
           </select>
 
           <button className="btn btn-primary btn-sm" onClick={handleGenerate} disabled={loading} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
             {loading
               ? <><span style={{ width: 14, height: 14, border: '2px solid white', borderTopColor: 'transparent', borderRadius: '50%', display: 'inline-block', animation: 'spin 0.8s linear infinite' }} /> Generating…</>
-              : '⚡ Generate Deck'}
+              : <><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> Generate Deck</>}
           </button>
 
           {slides.length > 0 && !loading && (
             <>
-              <button className="btn btn-secondary btn-sm" onClick={() => { setCurrentSlide(0); setPresenting(true); }}>▶ Present</button>
+              <button className="btn btn-secondary btn-sm" onClick={() => { setCurrentSlide(0); setPresenting(true); }} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg> Present
+              </button>
               <button className="btn btn-secondary btn-sm" onClick={handleDownloadPDF} disabled={!!exporting} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                {exporting === 'pdf' ? '⏳' : '⬇'} PDF
+                {exporting === 'pdf'
+                  ? <span style={{ width: 12, height: 12, border: '2px solid currentColor', borderTopColor: 'transparent', borderRadius: '50%', display: 'inline-block', animation: 'spin 0.8s linear infinite' }} />
+                  : <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>} PDF
               </button>
               <button className="btn btn-secondary btn-sm" onClick={handleDownloadPPTX} disabled={!!exporting} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                {exporting === 'pptx' ? '⏳' : '⬇'} PPTX
+                {exporting === 'pptx'
+                  ? <span style={{ width: 12, height: 12, border: '2px solid currentColor', borderTopColor: 'transparent', borderRadius: '50%', display: 'inline-block', animation: 'spin 0.8s linear infinite' }} />
+                  : <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>} PPTX
               </button>
             </>
           )}
@@ -365,10 +371,36 @@ export default function Deck() {
 
       <div className="page-content">
         {loading && (
-          <div style={{ textAlign: 'center', padding: '80px 0', color: 'var(--text-muted)' }}>
-            <div style={{ fontSize: 48, marginBottom: 16 }}>✨</div>
-            <div style={{ fontSize: 16, fontWeight: 600 }}>Generating your deck…</div>
-            <div style={{ fontSize: 13, marginTop: 8 }}>This takes ~30 seconds. AI is crafting your slides.</div>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '80px 0', gap: 24 }}>
+            {/* Animated presentation icon */}
+            <div style={{ position: 'relative', width: 80, height: 80 }}>
+              <svg width="80" height="80" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect x="8" y="12" width="64" height="44" rx="4" stroke="var(--accent)" strokeWidth="2.5" fill="none"/>
+                <line x1="40" y1="56" x2="40" y2="68" stroke="var(--accent)" strokeWidth="2.5"/>
+                <line x1="28" y1="68" x2="52" y2="68" stroke="var(--accent)" strokeWidth="2.5" strokeLinecap="round"/>
+                <rect x="18" y="22" width="44" height="4" rx="2" fill="var(--accent)" opacity="0.3">
+                  <animate attributeName="opacity" values="0.3;0.8;0.3" dur="1.5s" repeatCount="indefinite"/>
+                </rect>
+                <rect x="18" y="31" width="32" height="3" rx="1.5" fill="var(--accent)" opacity="0.2">
+                  <animate attributeName="opacity" values="0.2;0.6;0.2" dur="1.5s" begin="0.2s" repeatCount="indefinite"/>
+                </rect>
+                <rect x="18" y="38" width="38" height="3" rx="1.5" fill="var(--accent)" opacity="0.2">
+                  <animate attributeName="opacity" values="0.2;0.6;0.2" dur="1.5s" begin="0.4s" repeatCount="indefinite"/>
+                </rect>
+                <rect x="18" y="45" width="24" height="3" rx="1.5" fill="var(--accent)" opacity="0.2">
+                  <animate attributeName="opacity" values="0.2;0.6;0.2" dur="1.5s" begin="0.6s" repeatCount="indefinite"/>
+                </rect>
+              </svg>
+            </div>
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ fontSize: 16, fontWeight: 600, color: 'var(--text)', marginBottom: 8 }}>Generating your presentation...</div>
+              <div style={{ fontSize: 13, color: 'var(--text-muted)' }}>AI is analyzing your project and crafting slides. This takes ~30 seconds.</div>
+            </div>
+            <div style={{ display: 'flex', gap: 6 }}>
+              {[0,1,2].map(i => (
+                <div key={i} style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--accent)', animation: `bounce 1.2s ease-in-out ${i * 0.2}s infinite` }} />
+              ))}
+            </div>
           </div>
         )}
 
@@ -422,15 +454,32 @@ export default function Deck() {
 
         {slides.length === 0 && !loading && (
           <div className="empty-state">
-            <div style={{ fontSize: 56, marginBottom: 16 }}>🎨</div>
-            <p style={{ fontSize: 16, fontWeight: 600, marginBottom: 8 }}>Generate a Professional Deck</p>
+            {/* Presentation SVG illustration */}
+            <svg width="72" height="72" viewBox="0 0 72 72" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ marginBottom: 20, opacity: 0.5 }}>
+              <rect x="6" y="10" width="60" height="42" rx="4" stroke="var(--text-muted)" strokeWidth="2.5" fill="none"/>
+              <line x1="36" y1="52" x2="36" y2="62" stroke="var(--text-muted)" strokeWidth="2.5"/>
+              <line x1="24" y1="62" x2="48" y2="62" stroke="var(--text-muted)" strokeWidth="2.5" strokeLinecap="round"/>
+              <rect x="14" y="19" width="44" height="5" rx="2.5" fill="var(--text-muted)" opacity="0.4"/>
+              <rect x="14" y="29" width="30" height="3" rx="1.5" fill="var(--text-muted)" opacity="0.25"/>
+              <rect x="14" y="36" width="36" height="3" rx="1.5" fill="var(--text-muted)" opacity="0.25"/>
+              <rect x="14" y="43" width="22" height="3" rx="1.5" fill="var(--text-muted)" opacity="0.25"/>
+            </svg>
+            <p style={{ fontSize: 16, fontWeight: 600, marginBottom: 8 }}>Generate a Professional Presentation</p>
             <p style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 24 }}>
-              Choose the deck type based on your audience, then click Generate. Export as PDF or PPTX.
+              Choose the deck type based on your audience, then click Generate. Export as PDF or PPTX when done.
             </p>
             <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
-              {['Technical', 'Demo', 'Interview'].map(t => (
-                <div key={t} style={{ background: 'var(--surface)', border: '1px solid var(--border)', padding: '8px 16px', borderRadius: 6, fontSize: 13, color: 'var(--text-muted)' }}>
-                  {t === 'Technical' ? '🔧' : t === 'Demo' ? '🎯' : '🎓'} {t}
+              {[
+                { label: 'Technical', desc: 'Architecture & code deep-dive', icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg> },
+                { label: 'Demo', desc: 'For judges & clients', icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg> },
+                { label: 'Interview', desc: 'Viva & exam prep', icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg> }
+              ].map(item => (
+                <div key={item.label} style={{ background: 'var(--surface)', border: '1px solid var(--border)', padding: '12px 20px', borderRadius: 8, fontSize: 13, color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <span style={{ color: 'var(--accent)' }}>{item.icon}</span>
+                  <div style={{ textAlign: 'left' }}>
+                    <div style={{ fontWeight: 600, color: 'var(--text)', fontSize: 13 }}>{item.label}</div>
+                    <div style={{ fontSize: 11, marginTop: 2 }}>{item.desc}</div>
+                  </div>
                 </div>
               ))}
             </div>
@@ -440,6 +489,7 @@ export default function Deck() {
 
       <style>{`
         @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes bounce { 0%, 80%, 100% { transform: translateY(0); opacity: 0.4; } 40% { transform: translateY(-8px); opacity: 1; } }
       `}</style>
     </div>
   );
