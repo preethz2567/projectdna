@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { listProjects, createProject, deleteProject, getPendingInvitations, acceptInvitation, declineInvitation } from '../api/projects';
+import { getNotifications, markNotificationRead } from '../api/notifications';
 import { updateProfile } from '../api/auth';
 import api from '../api/client';
 import { useStore } from '../store/useStore';
@@ -14,6 +15,9 @@ export default function Dashboard() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [healthScores, setHealthScores] = useState<Record<string, number>>({});
   const [invitations, setInvitations] = useState<any[]>([]);
+  const [notifications, setNotifications] = useState<any[]>([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchIndex, setSearchIndex] = useState<Record<string, Project[]>>({});
   const [showModal, setShowModal] = useState(false);
   const [form, setForm] = useState({ title: '', description: '', vision: '' });
   const [loading, setLoading] = useState(false);
@@ -40,7 +44,34 @@ export default function Dashboard() {
       setHealthScores(scoreMap);
     });
     getPendingInvitations().then(setInvitations);
+    getNotifications().then(setNotifications);
   }, [user]);
+
+  // Hashing technique: Inverted Index for fast project searching (O(1) lookup per word)
+  useEffect(() => {
+    const index: Record<string, Project[]> = {};
+    projects.forEach(p => {
+      const words = `${p.title} ${p.description}`.toLowerCase().split(/\W+/).filter(Boolean);
+      words.forEach(word => {
+        for (let i = 1; i <= word.length; i++) {
+          const prefix = word.substring(0, i);
+          if (!index[prefix]) index[prefix] = [];
+          if (!index[prefix].find(x => x.id === p.id)) {
+            index[prefix].push(p);
+          }
+        }
+      });
+    });
+    setSearchIndex(index);
+  }, [projects]);
+
+  const filteredProjects = searchQuery.trim()
+    ? searchQuery.trim().toLowerCase().split(/\W+/).filter(Boolean).reduce((acc, word, idx) => {
+        const matches = searchIndex[word] || [];
+        if (idx === 0) return matches;
+        return acc.filter(p => matches.find(m => m.id === p.id));
+      }, [] as Project[])
+    : projects;
 
   async function handleCreate(e: React.FormEvent) {
     e.preventDefault();
@@ -157,28 +188,33 @@ export default function Dashboard() {
           </div>
 
           {/* Sidebar Nav */}
-          <div style={{ padding: '20px 12px', display: 'flex', flexDirection: 'column', gap: 4 }}>
-             {[
-               { icon: <FolderIcon />, label: 'Workspaces', active: true }
-             ].map(item => (
-               <div key={item.label} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 16px', margin: '4px 8px', borderRadius: 8, background: item.active ? 'rgba(255,255,255,0.15)' : 'transparent', color: theme.textPanel, cursor: 'pointer', transition: 'all 0.2s ease' }}>
-                 <div>{item.icon}</div>
-                 <span style={{ fontSize: 13, fontWeight: 600, fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{item.label}</span>
-               </div>
-             ))}
-          </div>
+          <nav className="sidebar-nav" style={{ padding: 0 }}>
+             <div className="sidebar-section">CORE</div>
+             
+             <div className="nav-item active">
+               <span className="nav-item-icon"><FolderIcon /></span>
+               Workspaces
+             </div>
+             
+             <div className="nav-item" onClick={() => document.getElementById('invitations-section')?.scrollIntoView({ behavior: 'smooth' })}>
+               <span className="nav-item-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg></span>
+               Notifications
+               {(invitations.length + notifications.length) > 0 && <span className="sidebar-badge">{invitations.length + notifications.length}</span>}
+             </div>
+
+          </nav>
 
           {/* Bottom Settings */}
-          <div style={{ marginTop: 'auto', padding: '20px 12px', borderTop: `1px solid ${theme.borderSubtle}`, display: 'flex', flexDirection: 'column', gap: 4 }}>
-             <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 16px', margin: '2px 8px', borderRadius: 8, color: theme.textPanelMuted, cursor: 'pointer', transition: 'all 0.2s' }} onMouseOver={e=>{e.currentTarget.style.color='white'; e.currentTarget.style.background='rgba(255,255,255,0.05)'}} onMouseOut={e=>{e.currentTarget.style.color=theme.textPanelMuted; e.currentTarget.style.background='transparent'}}>
-               <SettingsIcon />
-               <span style={{ fontSize: 13, fontWeight: 500, fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Settings</span>
+          <div style={{ marginTop: 'auto', padding: '12px 0', borderTop: `1px solid ${theme.borderSubtle}` }}>
+             <div className="nav-item">
+               <span className="nav-item-icon"><SettingsIcon /></span>
+               Settings
              </div>
-             <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 16px', margin: '2px 8px', borderRadius: 8, color: theme.textPanelMuted, cursor: 'pointer', transition: 'all 0.2s' }} onMouseOver={e=>{e.currentTarget.style.color='white'; e.currentTarget.style.background='rgba(255,255,255,0.05)'}} onMouseOut={e=>{e.currentTarget.style.color=theme.textPanelMuted; e.currentTarget.style.background='transparent'}}>
-               <HelpIcon />
-               <span style={{ fontSize: 13, fontWeight: 500, fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Support</span>
+             <div className="nav-item">
+               <span className="nav-item-icon"><HelpIcon /></span>
+               Support
              </div>
-             <div style={{ padding: '16px 12px 8px', fontSize: 10, fontWeight: 700, fontFamily: 'var(--font-mono)', color: theme.textPanelMuted, letterSpacing: '0.1em', cursor: 'pointer', transition: 'color 0.2s', textTransform: 'uppercase' }} onClick={logout} onMouseOver={e=>e.currentTarget.style.color='white'} onMouseOut={e=>e.currentTarget.style.color=theme.textPanelMuted}>
+             <div className="sidebar-section" onClick={logout} style={{ cursor: 'pointer' }}>
                LOGOUT
              </div>
           </div>
@@ -189,20 +225,49 @@ export default function Dashboard() {
           
           <div style={{ padding: '48px', position: 'relative', zIndex: 1, maxWidth: 1200, margin: '0 auto' }}>
             
-            {/* Invitations Section */}
-            {invitations.length > 0 && (
-              <div style={{ marginBottom: 48, background: theme.bgCard, border: `1px solid ${theme.accent}`, padding: 24 }}>
-                <h3 style={{ fontFamily: 'var(--font-heading)', margin: '0 0 16px 0', color: theme.textMain, fontSize: 20 }}>Pending Invitations</h3>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                  {invitations.map(inv => (
-                    <div key={inv.project_id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: theme.bgPanel, padding: 16, border: `1px solid ${theme.borderSubtle}` }}>
-                      <div>
-                        <div style={{ fontSize: 16, fontWeight: 600, color: theme.textMain, marginBottom: 4 }}>{inv.project_title}</div>
-                        <div style={{ fontSize: 13, color: theme.textMuted }}>Invited by {inv.inviter_name} to join as <span style={{ textTransform: 'capitalize', color: theme.accent }}>{inv.role}</span></div>
+            {/* Notifications & Invitations Section */}
+            {(invitations.length > 0 || notifications.length > 0) && (
+              <div id="invitations-section" style={{ marginBottom: 48, background: '#ffffff', border: `1px solid ${theme.border}`, borderRadius: 8, padding: '24px 32px', boxShadow: '0 4px 6px rgba(0,0,0,0.02)' }}>
+                <h3 style={{ fontFamily: 'var(--font-heading)', margin: '0 0 24px 0', color: theme.textMain, fontSize: 22, fontWeight: 700 }}>Action Required</h3>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                  {/* Notifications */}
+                  {notifications.map(notif => (
+                    <div key={notif.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#f8fafc', padding: '20px 24px', borderRadius: 4, border: '1px solid #e2e8f0' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                        <div style={{ color: notif.type === 'invite_accepted' ? '#10b981' : '#ef4444' }}>
+                          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                        </div>
+                        <div>
+                          <div style={{ fontSize: 16, fontWeight: 600, color: '#0f172a', marginBottom: 4 }}>
+                            {notif.type === 'invite_accepted' ? 'Invitation Accepted' : 'Invitation Declined'}
+                          </div>
+                          <div style={{ fontSize: 13, color: '#64748b' }}>{notif.content}</div>
+                        </div>
                       </div>
-                      <div style={{ display: 'flex', gap: 8 }}>
+                      <button 
+                        style={{ background: 'transparent', border: '1px solid #cbd5e1', color: '#64748b', padding: '6px 16px', borderRadius: 4, fontSize: 12, fontWeight: 700, cursor: 'pointer', transition: 'all 0.2s' }}
+                        onMouseOver={e=>{e.currentTarget.style.background='#f1f5f9'}}
+                        onMouseOut={e=>{e.currentTarget.style.background='transparent'}}
+                        onClick={async () => {
+                          await markNotificationRead(notif.id);
+                          setNotifications(prev => prev.filter(n => n.id !== notif.id));
+                        }}
+                      >
+                        DISMISS
+                      </button>
+                    </div>
+                  ))}
+                  
+                  {/* Invitations */}
+                  {invitations.map(inv => (
+                    <div key={inv.project_id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#1e293b', padding: '20px 24px', borderRadius: 4 }}>
+                      <div>
+                        <div style={{ fontSize: 17, fontWeight: 600, color: '#ffffff', marginBottom: 6 }}>{inv.project_title}</div>
+                        <div style={{ fontSize: 13, color: '#94a3b8' }}>Invited by {inv.inviter_name} to join as <span style={{ color: '#ffffff' }}>{inv.role}</span></div>
+                      </div>
+                      <div style={{ display: 'flex', gap: 12 }}>
                         <button 
-                          style={{ background: 'transparent', border: '1px solid #10b981', color: '#10b981', padding: '8px 16px', fontSize: 12, fontWeight: 700, fontFamily: 'var(--font-mono)', textTransform: 'uppercase', cursor: 'pointer', transition: 'background 0.2s' }}
+                          style={{ background: 'transparent', border: '1px solid #10b981', color: '#10b981', padding: '6px 16px', borderRadius: 4, fontSize: 12, fontWeight: 700, cursor: 'pointer', transition: 'all 0.2s' }}
                           onMouseOver={e=>{e.currentTarget.style.background='rgba(16, 185, 129, 0.1)'}}
                           onMouseOut={e=>{e.currentTarget.style.background='transparent'}}
                           onClick={async () => {
@@ -212,10 +277,10 @@ export default function Dashboard() {
                             setProjects(data);
                           }}
                         >
-                          Accept
+                          ACCEPT
                         </button>
                         <button 
-                          style={{ background: 'transparent', border: '1px solid #ef4444', color: '#ef4444', padding: '8px 16px', fontSize: 12, fontWeight: 700, fontFamily: 'var(--font-mono)', textTransform: 'uppercase', cursor: 'pointer', transition: 'background 0.2s' }}
+                          style={{ background: 'transparent', border: '1px solid #ef4444', color: '#ef4444', padding: '6px 16px', borderRadius: 4, fontSize: 12, fontWeight: 700, cursor: 'pointer', transition: 'all 0.2s' }}
                           onMouseOver={e=>{e.currentTarget.style.background='rgba(239, 68, 68, 0.1)'}}
                           onMouseOut={e=>{e.currentTarget.style.background='transparent'}}
                           onClick={async () => {
@@ -223,7 +288,7 @@ export default function Dashboard() {
                             setInvitations(prev => prev.filter(i => i.project_id !== inv.project_id));
                           }}
                         >
-                          Decline
+                          DECLINE
                         </button>
                       </div>
                     </div>
@@ -232,7 +297,7 @@ export default function Dashboard() {
               </div>
             )}
 
-            {/* Header */}
+            {/* Header with Search and New Project */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 48 }}>
                <div>
                  <div style={{ fontFamily: 'var(--font-mono)', fontSize: 11, fontWeight: 700, color: theme.accent, letterSpacing: '0.15em', textTransform: 'uppercase', marginBottom: 12 }}>
@@ -245,85 +310,74 @@ export default function Dashboard() {
                    <span style={{ fontFamily: 'var(--font-mono)', fontSize: 12 }}>STATUS: ONLINE</span>
                  </div>
                </div>
-               <button className="btn" style={{ background: theme.accent, color: 'white', border: 'none', padding: '14px 24px', borderRadius: 0, fontSize: 13, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', textTransform: 'uppercase', letterSpacing: '0.05em', transition: 'background 0.2s' }} onClick={() => setShowModal(true)} onMouseOver={e=>e.currentTarget.style.background=theme.accentHover} onMouseOut={e=>e.currentTarget.style.background=theme.accent}>
-                 <PlusIcon />
-                 NEW PROJECT
-               </button>
+               <div style={{ display: 'flex', flexDirection: 'column', gap: 16, alignItems: 'flex-end' }}>
+                 <button className="btn" style={{ background: theme.accent, color: 'white', border: 'none', padding: '14px 24px', borderRadius: 4, fontSize: 13, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', textTransform: 'uppercase', letterSpacing: '0.05em', transition: 'background 0.2s' }} onClick={() => setShowModal(true)} onMouseOver={e=>e.currentTarget.style.background=theme.accentHover} onMouseOut={e=>e.currentTarget.style.background=theme.accent}>
+                   <PlusIcon />
+                   NEW PROJECT
+                 </button>
+                 <div style={{ display: 'flex', alignItems: 'center', background: '#fff', border: `1px solid ${theme.border}`, borderRadius: 24, padding: '8px 16px', width: 300 }}>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="2" style={{ marginRight: 8 }}><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                    <input type="text" placeholder="Search projects by title..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)} style={{ border: 'none', outline: 'none', background: 'transparent', fontSize: 14, width: '100%' }} />
+                 </div>
+               </div>
             </div>
 
             {/* Grid */}
             {projects.length === 0 ? (
-               <div style={{ textAlign: 'center', padding: '80px 32px', background: theme.bgCard, border: `1px dashed ${theme.border}`, borderRadius: 0 }}>
-                 <div style={{ width: 64, height: 64, background: theme.pillBg, borderRadius: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: theme.accent, margin: '0 auto 24px', border: `1px solid ${theme.border}` }}>
-                    <PlusIcon />
-                 </div>
-                 <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: 24, marginBottom: 12, color: theme.textMain }}>No projects yet</h3>
+               <div style={{ textAlign: 'center', padding: '80px 32px', background: theme.bgCard, border: `1px dashed ${theme.border}`, borderRadius: 8 }}>
+                  <div onClick={() => setShowModal(true)} style={{ width: 64, height: 64, background: theme.pillBg, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: theme.accent, margin: '0 auto 24px', border: `1px solid ${theme.border}`, cursor: 'pointer', transition: 'background 0.2s' }} onMouseOver={e=>e.currentTarget.style.background='#e2e8f0'} onMouseOut={e=>e.currentTarget.style.background=theme.pillBg}>
+                     <PlusIcon />
+                  </div>
+                  <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: 24, marginBottom: 12, color: theme.textMain }}>No projects yet</h3>
                  <p style={{ color: theme.textMuted, marginBottom: 24, fontSize: 15 }}>Create your first project to begin the analysis pipeline.</p>
                </div>
             ) : (
                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))', gap: 24 }}>
-                 {projects.map((p, i) => {
-                   const mockTags = p.description ? p.description.split(' ').slice(0, 3).filter(t=>t.length>3) : ['REACT', 'NODE', 'API'];
-                   const timeAgos = ['06 MIN', '01 HR', '12 MIN', '03 DAY', '01 WK', '02 HR'];
-                   const timeStr = timeAgos[i % timeAgos.length];
+                 {filteredProjects.map((p, i) => {
+                   const mockTags = p.description ? p.description.split(' ').slice(0, 3).filter(t=>t.length>3) : ['React', 'Node', 'API'];
+                   const isNew = i % 3 === 0;
                    
                    return (
-                     <div key={p.id} onClick={() => navigate(`/projects/${p.id}`)} style={{ background: theme.bgCard, border: `1px solid ${theme.border}`, borderTop: `4px solid ${theme.accent}`, borderRadius: 0, padding: 32, cursor: 'pointer', display: 'flex', flexDirection: 'column', gap: 24, transition: 'all 0.2s', position: 'relative' }} onMouseOver={e=>{e.currentTarget.style.transform='translateY(-2px)'; e.currentTarget.style.boxShadow='0 10px 30px -10px rgba(0,0,0,0.1)'}} onMouseOut={e=>{e.currentTarget.style.transform='translateY(0)'; e.currentTarget.style.boxShadow='none'}}>
-                       
-                       {/* Top Row */}
-                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                         <div style={{ fontFamily: 'var(--font-mono)', fontSize: 11, fontWeight: 700, color: theme.accent, letterSpacing: '0.1em' }}>
-                           SYS.ID: {p.id.substring(0, 8).toUpperCase()}
-                         </div>
-                         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                           <div style={{ fontSize: 11, fontWeight: 700, color: theme.textMuted, fontFamily: 'var(--font-mono)', letterSpacing: '0.05em' }}>
-                             T-{timeStr}
+                     <div key={p.id} onClick={() => navigate(`/projects/${p.id}`)} style={{ background: '#ffffff', border: `1px solid #e5e7eb`, borderRadius: 6, padding: '24px 32px', cursor: 'pointer', display: 'flex', flexDirection: 'column', transition: 'all 0.2s', position: 'relative' }} onMouseOver={e=>{e.currentTarget.style.borderColor='#cbd5e1'}} onMouseOut={e=>{e.currentTarget.style.borderColor='#e5e7eb'}}>
+                        {/* Badges Right */}
+                        <div style={{ position: 'absolute', top: 24, right: 24, display: 'flex', flexDirection: 'column', gap: 6, alignItems: 'flex-end' }}>
+                           {isNew && <div style={{ background: '#fbbf24', color: '#0f172a', padding: '4px 14px', borderRadius: 6, fontSize: 13, fontWeight: 600 }}>New</div>}
+                           <div style={{ background: '#15803d', color: 'white', padding: '4px 14px', borderRadius: 6, fontSize: 13, fontWeight: 600 }}>Active</div>
+                           <div style={{ background: '#64748b', color: 'white', padding: '4px 14px', borderRadius: 6, fontSize: 13, fontWeight: 600 }}>Participant</div>
+                        </div>
+
+                        {/* Title & Info */}
+                        <div style={{ paddingRight: 100 }}>
+                          <h3 style={{ fontFamily: '"Segoe UI", "Open Sans", sans-serif', fontSize: 22, fontWeight: 500, color: '#0f172a', margin: '0 0 12px 0', lineHeight: 1.3 }}>{p.title}</h3>
+                          <div style={{ fontSize: 16, color: '#64748b', marginBottom: 12 }}>
+                            Start Date: {new Date(p.created_at).toLocaleDateString('en-GB')}
+                          </div>
+                          <div style={{ fontSize: 16, color: '#64748b', marginBottom: 24 }}>
+                            Mentorship: NoMentor
+                          </div>
+                        </div>
+
+                        {/* Clusters */}
+                        <div>
+                           <div style={{ fontSize: 16, color: '#64748b', marginBottom: 12 }}>Clusters</div>
+                           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                             {mockTags.map((tag, idx) => (
+                               <span key={idx} style={{ fontSize: 12, fontWeight: 700, color: '#000000', border: `1px solid #e2e8f0`, padding: '6px 14px', borderRadius: 20 }}>
+                                 {tag.toUpperCase()}
+                               </span>
+                             ))}
                            </div>
-                           <button
-                             onClick={async (e) => {
-                               e.stopPropagation();
-                               if (!confirm(`Delete "${p.title}"? This cannot be undone.`)) return;
-                               await deleteProject(p.id);
-                               setProjects(prev => prev.filter(x => x.id !== p.id));
-                             }}
-                             style={{ background: 'transparent', border: '1px solid #ef4444', color: '#ef4444', padding: '2px 6px', fontSize: 10, fontFamily: 'var(--font-mono)', cursor: 'pointer', textTransform: 'uppercase', letterSpacing: '0.05em' }}
-                             title="Delete project"
-                           >
-                             ✕ DEL
+                        </div>
+
+                        {/* Bottom Row */}
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: 24 }}>
+                           <div style={{ color: '#94a3b8' }}>
+                             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ transform: 'rotate(45deg)' }}><line x1="12" y1="17" x2="12" y2="22"></line><path d="M5 17h14v-1.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.68V6a3 3 0 0 0-3-3 3 3 0 0 0-3 3v4.68a2 2 0 0 1-1.11 1.87l-1.78.9A2 2 0 0 0 5 15.24Z"></path></svg>
+                           </div>
+                           <button style={{ background: '#ffffff', border: '1px solid #3b82f6', color: '#3b82f6', padding: '6px 24px', borderRadius: 4, fontSize: 16, fontWeight: 400, cursor: 'pointer', transition: 'background 0.2s' }} onMouseOver={e=>e.currentTarget.style.background='rgba(59, 130, 246, 0.05)'} onMouseOut={e=>e.currentTarget.style.background='#ffffff'}>
+                             Open
                            </button>
-                         </div>
-                       </div>
-
-                       {/* Title */}
-                       <div>
-                         <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: 22, fontWeight: 600, color: theme.textMain, margin: '0 0 16px 0', lineHeight: 1.2 }}>{p.title}</h3>
-                         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                            {mockTags.length === 0 ? <span style={{ fontSize: 10, fontFamily: 'var(--font-mono)', color: theme.textMuted, border: `1px solid ${theme.border}`, padding: '4px 8px', borderRadius: 0, textTransform: 'uppercase', letterSpacing: '0.05em' }}>FULLSTACK</span> : null}
-                            {mockTags.map((tag, idx) => (
-                              <span key={idx} style={{ fontSize: 10, fontFamily: 'var(--font-mono)', color: theme.textMuted, border: `1px solid ${theme.border}`, padding: '4px 8px', borderRadius: 0, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                                {tag.toUpperCase()}
-                              </span>
-                            ))}
-                         </div>
-                       </div>
-
-                       {/* Bottom: Health */}
-                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: 'auto', paddingTop: 24, borderTop: `1px solid ${theme.border}` }}>
-                          <div>
-                            <div style={{ fontSize: 10, fontFamily: 'var(--font-mono)', color: theme.textMuted, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 6 }}>HEALTH INDEX</div>
-                            <div style={{ fontSize: 24, fontWeight: 400, fontFamily: 'var(--font-mono)', color: theme.textMain, lineHeight: 1 }}>
-                              {healthScores[p.id] || 0}<span style={{ color: theme.textMuted, fontSize: 14 }}>/100</span>
-                            </div>
-                          </div>
-                          
-                          {/* Mock users stack - Sharp borders */}
-                          <div style={{ display: 'flex', alignItems: 'center' }}>
-                             <div style={{ width: 28, height: 28, background: 'var(--text)', border: `1px solid ${theme.bgCard}`, color: 'white', zIndex: 3, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 700, fontFamily: 'var(--font-mono)' }}>JD</div>
-                             <div style={{ width: 28, height: 28, background: theme.accent, border: `1px solid ${theme.bgCard}`, color: 'white', marginLeft: -8, zIndex: 2, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 700, fontFamily: 'var(--font-mono)' }}>MK</div>
-                             <div style={{ width: 28, height: 28, background: '#fafafa', border: `1px solid ${theme.border}`, marginLeft: -8, zIndex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 700, color: theme.textMuted, fontFamily: 'var(--font-mono)' }}>+2</div>
-                          </div>
-                       </div>
-
+                        </div>
                      </div>
                    );
                  })}

@@ -7,6 +7,8 @@ dist/
 ai-service/data/
 project_reference.md
 
+learning/
+
 # Terraform
 terraform/.terraform/
 terraform/terraform.tfvars

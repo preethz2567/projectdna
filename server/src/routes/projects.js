@@ -67,6 +67,16 @@ router.post('/invitations/:projectId/accept', authenticate, async (req, res) => 
       'INSERT INTO timeline_events (project_id, event_type, title, created_by) VALUES ($1, $2, $3, $4)',
       [req.params.projectId, 'member_joined', `${req.user.display_name} joined the project as a ${result.rows[0].role}`, req.user.id]
     );
+
+    // Notify project owner
+    const project = await pool.query('SELECT owner_id, title FROM projects WHERE id = $1', [req.params.projectId]);
+    if (project.rows[0]) {
+       await pool.query(
+         'INSERT INTO notifications (user_id, type, content, project_id) VALUES ($1, $2, $3, $4)',
+         [project.rows[0].owner_id, 'invite_accepted', `${req.user.display_name} accepted your invitation to join ${project.rows[0].title}.`, req.params.projectId]
+       );
+    }
+
     res.json({ message: 'Invitation accepted' });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -79,6 +89,13 @@ router.post('/invitations/:projectId/decline', authenticate, async (req, res) =>
       "DELETE FROM project_members WHERE project_id = $1 AND user_id = $2 AND status = 'pending'",
       [req.params.projectId, req.user.id]
     );
+    const project = await pool.query('SELECT owner_id, title FROM projects WHERE id = $1', [req.params.projectId]);
+    if (project.rows[0]) {
+       await pool.query(
+         'INSERT INTO notifications (user_id, type, content, project_id) VALUES ($1, $2, $3, $4)',
+         [project.rows[0].owner_id, 'invite_declined', `${req.user.display_name} declined your invitation to join ${project.rows[0].title}.`, req.params.projectId]
+       );
+    }
     res.json({ message: 'Invitation declined' });
   } catch (err) {
     res.status(500).json({ error: err.message });
