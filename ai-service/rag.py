@@ -14,7 +14,11 @@ os.makedirs(FAISS_DIR, exist_ok=True)
 
 
 def get_db():
-    return psycopg2.connect(os.getenv('DATABASE_URL'))
+    db_url = os.getenv('DATABASE_URL') or (
+        f"postgresql://{os.getenv('DB_USER', 'postgres')}:{os.getenv('DB_PASSWORD', '')}@"
+        f"{os.getenv('DB_HOST', 'localhost')}:{os.getenv('DB_PORT', '5432')}/{os.getenv('DB_NAME', 'projectdna')}"
+    )
+    return psycopg2.connect(db_url, sslmode='require')
 
 
 def chunk_repository(repo_data: dict) -> list[dict]:
