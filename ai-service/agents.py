@@ -427,48 +427,102 @@ Make questions specific to THIS project. Test architectural decisions, not gener
 # ── Agent 8: Deck Generator ──────────────────────────────────────────────
 def deck_agent(repository_id: str, deck_type: str = 'technical') -> dict:
     """
-    Generates presentation slide content for reveal.js.
+    Generates rich, Gamma-style structured presentation slides.
     deck_type: 'technical' | 'demo' | 'interview'
+    Returns slides with layout, theme, bullets array, and optional code snippets.
     """
-    chunks = retrieve(repository_id, 'project overview architecture features deployment tech stack', top_k=8)
+    chunks = retrieve(repository_id, 'project overview architecture features deployment tech stack goals purpose', top_k=10)
     context = build_context(chunks)
 
     deck_configs = {
-        'technical': 'a deep technical presentation for engineers — cover architecture, tech decisions, database design, deployment pipeline, and challenges solved',
-        'demo': 'a product demo presentation — cover what it does, key features, live demo flow, tech stack, and what makes it unique',
-        'interview': 'an interview/viva presentation — cover project purpose, your role, technical decisions and why, challenges faced, and what you learned'
+        'technical': 'a deep technical presentation for engineers — cover system architecture, tech stack decisions, database design, deployment pipeline, API design, and challenges solved',
+        'demo': 'a compelling product demo presentation — cover what problem it solves, key features, user flow, tech stack highlights, and unique differentiators',
+        'interview': 'a detailed interview/viva presentation — cover project purpose, your specific role and contributions, key technical decisions and WHY you made them, challenges you faced, and what you learned'
     }
 
-    system_prompt = f"""You are creating a reveal.js presentation.
+    theme_map = {
+        'technical': 'navy',
+        'demo': 'purple',
+        'interview': 'teal'
+    }
+    base_theme = theme_map.get(deck_type, 'navy')
+
+    system_prompt = f"""You are a professional presentation designer creating a stunning Gamma-style deck.
 Generate {deck_configs.get(deck_type, deck_configs['technical'])}.
 
-Output ONLY a JSON array of slide objects — no other text:
+Return ONLY a valid JSON array. No markdown fences, no explanation, just JSON:
 [
   {{
-    "title": "Slide Title",
-    "content": "Main bullet point\\n• Sub point 1\\n• Sub point 2",
-    "notes": "Speaker notes for this slide",
-    "type": "title|content|code|diagram"
+    "title": "Slide Title Here",
+    "subtitle": "Optional subtitle or tagline (only for title slides)",
+    "bullets": ["First key point — be specific", "Second key point with detail", "Third key point"],
+    "type": "title",
+    "theme": "{base_theme}",
+    "code_snippet": null,
+    "code_language": null,
+    "notes": "What the presenter should say out loud for this slide"
+  }},
+  {{
+    "title": "System Architecture",
+    "subtitle": null,
+    "bullets": ["React + TypeScript frontend on CloudFront CDN", "Node.js Express REST API on ECS Fargate", "PostgreSQL on RDS for relational data", "FAISS vector database for AI semantic search"],
+    "type": "content",
+    "theme": "{base_theme}",
+    "code_snippet": null,
+    "code_language": null,
+    "notes": "Explain why each layer was chosen and how they connect"
+  }},
+  {{
+    "title": "Key Code Pattern",
+    "subtitle": null,
+    "bullets": ["One line explaining what this code does"],
+    "type": "code",
+    "theme": "dark",
+    "code_snippet": "// actual code from the project\\nconst example = () => {{\\n  return result;\\n}};",
+    "code_language": "javascript",
+    "notes": "Walk through what this code accomplishes"
   }}
 ]
 
-Rules:
-- 8-10 slides total
-- First slide: project title and one-line description
-- Last slide: key takeaways / what I learned
-- content uses \\n for line breaks, • for bullets
-- Keep each slide focused — max 4-5 bullet points
-- notes field contains what the presenter should SAY, not show
-- Be specific to THIS project""" + ANTI_HALLUCINATION_RULES
+STRICT RULES:
+- Generate exactly 8-10 slides
+- Slide types MUST be one of: title, content, code, split
+- Themes MUST be one of: {base_theme}, dark, light, accent
+- First slide must be type "title" with the real project name and a compelling subtitle
+- Last slide must be type "title" with theme "accent" — key takeaways
+- bullets must be a JSON array of strings, NEVER a single string
+- Keep each slide to 3-5 bullets maximum
+- code_snippet must be actual, relevant code from the project context — not pseudocode
+- notes is what the presenter SAYS — different from bullets
+- Be 100% specific to THIS project — real names, real tech, real decisions
+- Do NOT use placeholder text like "Project Name" — use the actual project name""" + ANTI_HALLUCINATION_RULES
 
-    user_message = f"{context}\n\nGenerate a {deck_type} presentation deck."
-    raw = call_llm(system_prompt, user_message, max_tokens=3000)
+    user_message = f"{context}\n\nGenerate a professional {deck_type} presentation deck."
+    raw = call_llm(system_prompt, user_message, max_tokens=4000)
 
     import json, re
     try:
+        # Try to extract JSON array robustly
         match = re.search(r'\[.*\]', raw, re.DOTALL)
-        slides = json.loads(match.group()) if match else []
+        if match:
+            slides = json.loads(match.group())
+        else:
+            slides = []
+
+        # Normalise: ensure bullets is always a list
+        for slide in slides:
+            if isinstance(slide.get('bullets'), str):
+                # Convert newline-separated string to list
+                lines = [l.strip().lstrip('•- ') for l in slide['bullets'].split('\n') if l.strip()]
+                slide['bullets'] = lines
+            if not isinstance(slide.get('bullets'), list):
+                slide['bullets'] = []
+            # Ensure theme is set
+            if not slide.get('theme'):
+                slide['theme'] = base_theme
+
     except Exception:
         slides = []
 
     return { 'slides': slides, 'deck_type': deck_type, 'agent': 'deck' }
+
