@@ -74,7 +74,7 @@ export default function Dashboard() {
   const theme = {
     bgApp: '#F8FAFC',        // Light gray main background
     bgPanel: 'var(--accent)',// Navy Blue topnav
-    bgSidebar: '#000000',    // Black left bar
+    bgSidebar: '#2C3338',    // Professional grey sidebar
     bgCard: '#FFFFFF',       // White cards
     border: 'var(--border)', // Use app border var
     borderSubtle: 'rgba(255,255,255,0.1)',
@@ -161,7 +161,7 @@ export default function Dashboard() {
              {[
                { icon: <FolderIcon />, label: 'Workspaces', active: true }
              ].map(item => (
-               <div key={item.label} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 12px', borderRadius: 0, background: item.active ? 'rgba(255,255,255,0.1)' : 'transparent', color: theme.textPanel, cursor: 'pointer' }}>
+               <div key={item.label} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 16px', margin: '4px 8px', borderRadius: 8, background: item.active ? 'rgba(255,255,255,0.15)' : 'transparent', color: theme.textPanel, cursor: 'pointer', transition: 'all 0.2s ease' }}>
                  <div>{item.icon}</div>
                  <span style={{ fontSize: 13, fontWeight: 600, fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{item.label}</span>
                </div>
@@ -170,11 +170,11 @@ export default function Dashboard() {
 
           {/* Bottom Settings */}
           <div style={{ marginTop: 'auto', padding: '20px 12px', borderTop: `1px solid ${theme.borderSubtle}`, display: 'flex', flexDirection: 'column', gap: 4 }}>
-             <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 12px', color: theme.textPanelMuted, cursor: 'pointer', transition: 'color 0.2s' }} onMouseOver={e=>e.currentTarget.style.color='white'} onMouseOut={e=>e.currentTarget.style.color=theme.textPanelMuted}>
+             <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 16px', margin: '2px 8px', borderRadius: 8, color: theme.textPanelMuted, cursor: 'pointer', transition: 'all 0.2s' }} onMouseOver={e=>{e.currentTarget.style.color='white'; e.currentTarget.style.background='rgba(255,255,255,0.05)'}} onMouseOut={e=>{e.currentTarget.style.color=theme.textPanelMuted; e.currentTarget.style.background='transparent'}}>
                <SettingsIcon />
                <span style={{ fontSize: 13, fontWeight: 500, fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Settings</span>
              </div>
-             <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 12px', color: theme.textPanelMuted, cursor: 'pointer', transition: 'color 0.2s' }} onMouseOver={e=>e.currentTarget.style.color='white'} onMouseOut={e=>e.currentTarget.style.color=theme.textPanelMuted}>
+             <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 16px', margin: '2px 8px', borderRadius: 8, color: theme.textPanelMuted, cursor: 'pointer', transition: 'all 0.2s' }} onMouseOver={e=>{e.currentTarget.style.color='white'; e.currentTarget.style.background='rgba(255,255,255,0.05)'}} onMouseOut={e=>{e.currentTarget.style.color=theme.textPanelMuted; e.currentTarget.style.background='transparent'}}>
                <HelpIcon />
                <span style={{ fontSize: 13, fontWeight: 500, fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Support</span>
              </div>
