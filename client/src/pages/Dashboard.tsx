@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { listProjects, createProject, deleteProject, getPendingInvitations, acceptInvitation, declineInvitation } from '../api/projects';
+import { listProjects, createProject, getPendingInvitations, acceptInvitation, declineInvitation } from '../api/projects';
 import { getNotifications, markNotificationRead } from '../api/notifications';
 import { updateProfile } from '../api/auth';
 import api from '../api/client';
@@ -13,13 +13,14 @@ interface Project {
 
 export default function Dashboard() {
   const [projects, setProjects] = useState<Project[]>([]);
-  const [healthScores, setHealthScores] = useState<Record<string, number>>({});
+  const [_healthScores, setHealthScores] = useState<Record<string, number>>({});
   const [invitations, setInvitations] = useState<any[]>([]);
   const [notifications, setNotifications] = useState<any[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchIndex, setSearchIndex] = useState<Record<string, Project[]>>({});
   const [showModal, setShowModal] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [form, setForm] = useState({ title: '', description: '', vision: '' });
   const [loading, setLoading] = useState(false);
 
@@ -27,7 +28,9 @@ export default function Dashboard() {
   const { user, logout, updateUser } = useStore();
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [editName, setEditName] = useState('');
+  const [editAvatar, setEditAvatar] = useState('');
   const [profileSaving, setProfileSaving] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -92,8 +95,8 @@ export default function Dashboard() {
     if (!editName.trim()) return;
     setProfileSaving(true);
     try {
-      const updated = await updateProfile({ display_name: editName });
-      updateUser({ display_name: updated.display_name });
+      const updated = await updateProfile({ display_name: editName, avatar_url: editAvatar || user?.avatar_url });
+      updateUser({ display_name: updated.display_name, avatar_url: updated.avatar_url });
       setIsEditingProfile(false);
     } catch (err) {
       console.error(err);
@@ -102,10 +105,36 @@ export default function Dashboard() {
     }
   }
 
+  function handleAvatarChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const MAX_SIZE = 150;
+        let width = img.width;
+        let height = img.height;
+        if (width > height) {
+          if (width > MAX_SIZE) { height *= MAX_SIZE / width; width = MAX_SIZE; }
+        } else {
+          if (height > MAX_SIZE) { width *= MAX_SIZE / height; height = MAX_SIZE; }
+        }
+        canvas.width = width; canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx?.drawImage(img, 0, 0, width, height);
+        setEditAvatar(canvas.toDataURL('image/jpeg', 0.8));
+      };
+      img.src = event.target?.result as string;
+    };
+    reader.readAsDataURL(file);
+  }
+
   // --- Theme ---
   const theme = {
     bgApp: '#F8FAFC',        // Light gray main background
-    bgPanel: 'var(--accent)',// Navy Blue topnav
+    bgPanel: '#2C3338',      // Grey topnav matching sidebar
     bgSidebar: '#2C3338',    // Professional grey sidebar
     bgCard: '#FFFFFF',       // White cards
     border: 'var(--border)', // Use app border var
@@ -123,48 +152,33 @@ export default function Dashboard() {
   const PlusIcon = () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>;
   const FolderIcon = () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>;
   const SettingsIcon = () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>;
-  const HelpIcon = () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>;
   const CubeIcon = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>;
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', background: theme.bgApp, color: theme.textMain, fontFamily: 'var(--font-sans)', overflow: 'hidden' }}>
-      
-      {/* --- TOPNAV --- */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: 48, background: theme.bgPanel, borderBottom: `1px solid ${theme.borderSubtle}`, padding: '0 24px', zIndex: 20 }}>
+      <div className="app-layout" style={{ background: theme.bgApp, color: theme.textMain, fontFamily: 'var(--font-sans)' }}>
         
-        {/* Left: Brand */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <div style={{ color: 'white' }}>
-            <CubeIcon />
-          </div>
-          <span style={{ fontSize: 14, fontWeight: 700, letterSpacing: '0.1em', color: theme.textPanel, fontFamily: 'var(--font-mono)', textTransform: 'uppercase' }}>PROJECTDNA</span>
-        </div>
+        {/* Mobile Nav Overlay */}
+        <div 
+          className={`mobile-overlay ${sidebarOpen ? 'open' : ''}`} 
+          onClick={() => setSidebarOpen(false)}
+        />
 
-        {/* Right: Actions */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 24 }}>
-          
-          <button style={{ background: 'white', color: theme.bgPanel, border: 'none', padding: '6px 12px', borderRadius: 0, fontSize: 11, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '0.05em' }} onClick={() => navigate('/recommendations')}>
-             What to build next
-             <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
-          </button>
-          
-          <div style={{ width: 28, height: 28, borderRadius: 0, background: 'white', color: theme.bgPanel, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 700, cursor: 'pointer' }}>
-             {user?.display_name?.charAt(0).toUpperCase() || 'U'}
-          </div>
-
-        </div>
-      </div>
-
-      <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
-        
         {/* --- LEFT SIDEBAR --- */}
-        <div style={{ width: 260, background: theme.bgSidebar, borderRight: `1px solid ${theme.borderSubtle}`, display: 'flex', flexDirection: 'column', zIndex: 10 }}>
+        <div className={`sidebar ${sidebarOpen ? 'open' : ''}`} style={{ background: theme.bgSidebar, borderRight: `1px solid ${theme.borderSubtle}` }}>
+          
+          {/* Topnav brand in sidebar for mobile */}
+          <div className="sidebar-brand hidden-desktop" style={{ padding: '16px 20px', display: 'none' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              <div style={{ color: 'white' }}><CubeIcon /></div>
+              <span style={{ fontSize: 14, fontWeight: 700, letterSpacing: '0.1em', color: theme.textPanel, fontFamily: 'var(--font-mono)', textTransform: 'uppercase' }}>PROJECTDNA</span>
+            </div>
+          </div>
           
           {/* User Profile */}
           <div style={{ padding: '24px 20px', borderBottom: `1px solid ${theme.borderSubtle}` }}>
              <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
-               <div style={{ width: 36, height: 36, background: 'rgba(255,255,255,0.1)', borderRadius: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: theme.textPanel, fontWeight: 700, fontFamily: 'var(--font-mono)' }}>
-                 {user?.display_name?.charAt(0).toUpperCase()}
+               <div style={{ width: 36, height: 36, background: 'rgba(255,255,255,0.1)', borderRadius: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: theme.textPanel, fontWeight: 700, fontFamily: 'var(--font-mono)', overflow: 'hidden' }}>
+                 {user?.avatar_url ? <img src={user.avatar_url} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="Avatar" /> : user?.display_name?.charAt(0).toUpperCase()}
                </div>
                <div style={{ flex: 1 }}>
                  {isEditingProfile ? (
@@ -218,9 +232,36 @@ export default function Dashboard() {
         </div>
 
         {/* --- MAIN CONTENT AREA --- */}
-        <div style={{ flex: 1, overflowY: 'auto', position: 'relative' }}>
+        <div className="main" style={{ position: 'relative' }}>
           
-          <div style={{ padding: '48px', position: 'relative', zIndex: 1, maxWidth: 1200, margin: '0 auto' }}>
+          <button 
+            className="mobile-nav-toggle"
+            onClick={() => setSidebarOpen(true)}
+            style={{ zIndex: 50 }}
+          >
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+          </button>
+
+          {/* Top Nav inside Main */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: 48, background: theme.bgPanel, borderBottom: `1px solid ${theme.borderSubtle}`, padding: '0 24px', zIndex: 20 }}>
+            <div className="hidden-mobile" style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              <div style={{ color: 'white' }}><CubeIcon /></div>
+              <span style={{ fontSize: 14, fontWeight: 700, letterSpacing: '0.1em', color: theme.textPanel, fontFamily: 'var(--font-mono)', textTransform: 'uppercase' }}>PROJECTDNA</span>
+            </div>
+            {/* Right: Actions */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 24, marginLeft: 'auto' }}>
+              <button className="btn" style={{ background: theme.accent, color: 'white', border: `1px solid rgba(255,255,255,0.2)`, padding: '8px 16px', borderRadius: 6, fontSize: 13, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', fontFamily: 'var(--font-sans)', transition: 'all 0.2s', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }} onMouseOver={e=>e.currentTarget.style.background='#1e293b'} onMouseOut={e=>e.currentTarget.style.background=theme.accent} onClick={() => navigate('/recommendations')}>
+                <span className="hidden-mobile">What to Build Next</span>
+                <span className="hidden-desktop" style={{ display: 'none' }}>Idea</span>
+                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+              </button>
+              <div style={{ width: 28, height: 28, borderRadius: 0, background: 'white', color: theme.bgPanel, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 700, cursor: 'pointer', overflow: 'hidden' }}>
+                 {user?.avatar_url ? <img src={user.avatar_url} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="Avatar" /> : (user?.display_name?.charAt(0).toUpperCase() || 'U')}
+              </div>
+            </div>
+          </div>
+
+          <div className="dashboard-content" style={{ padding: '48px', position: 'relative', zIndex: 1, maxWidth: 1200, margin: '0 auto' }}>
             
             {/* Notifications & Invitations Section */}
             {(invitations.length > 0 || notifications.length > 0) && (
@@ -295,7 +336,7 @@ export default function Dashboard() {
             )}
 
             {/* Header with Search and New Project */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 48 }}>
+            <div className="dashboard-header-mobile-friendly" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 48, flexWrap: 'wrap', gap: '24px' }}>
                <div>
                  <div style={{ fontFamily: 'var(--font-mono)', fontSize: 11, fontWeight: 700, color: theme.accent, letterSpacing: '0.15em', textTransform: 'uppercase', marginBottom: 12 }}>
                    WORKSPACE DASHBOARD
@@ -307,12 +348,12 @@ export default function Dashboard() {
                    <span style={{ fontFamily: 'var(--font-mono)', fontSize: 12 }}>STATUS: ONLINE</span>
                  </div>
                </div>
-               <div style={{ display: 'flex', flexDirection: 'column', gap: 16, alignItems: 'flex-end' }}>
-                 <button className="btn" style={{ background: theme.accent, color: 'white', border: 'none', padding: '14px 24px', borderRadius: 4, fontSize: 13, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', textTransform: 'uppercase', letterSpacing: '0.05em', transition: 'background 0.2s' }} onClick={() => setShowModal(true)} onMouseOver={e=>e.currentTarget.style.background=theme.accentHover} onMouseOut={e=>e.currentTarget.style.background=theme.accent}>
+               <div className="dashboard-header-actions" style={{ display: 'flex', flexDirection: 'column', gap: 16, alignItems: 'flex-end', width: 'auto' }}>
+                 <button className="btn" style={{ background: theme.accent, color: 'white', border: 'none', padding: '14px 24px', borderRadius: 4, fontSize: 13, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', textTransform: 'uppercase', letterSpacing: '0.05em', transition: 'background 0.2s', width: '100%', justifyContent: 'center' }} onClick={() => setShowModal(true)} onMouseOver={e=>e.currentTarget.style.background=theme.accentHover} onMouseOut={e=>e.currentTarget.style.background=theme.accent}>
                    <PlusIcon />
                    NEW PROJECT
                  </button>
-                 <div style={{ display: 'flex', alignItems: 'center', background: '#fff', border: `1px solid ${theme.border}`, borderRadius: 24, padding: '8px 16px', width: 300 }}>
+                 <div className="dashboard-search" style={{ display: 'flex', alignItems: 'center', background: '#fff', border: `1px solid ${theme.border}`, borderRadius: 24, padding: '8px 16px', width: 300, maxWidth: '100%' }}>
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="2" style={{ marginRight: 8 }}><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
                     <input type="text" placeholder="Search projects by title..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)} style={{ border: 'none', outline: 'none', background: 'transparent', fontSize: 14, width: '100%' }} />
                  </div>
@@ -382,17 +423,39 @@ export default function Dashboard() {
             )}
           </div>
         </div>
-
-      </div>
-
       {/* --- MODAL OVERLAY --- */}
+      {showModal && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.6)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999 }} onClick={() => setShowModal(false)}>
+          <div className="modal-content-mobile" style={{ background: theme.bgCard, border: `1px solid ${theme.border}`, padding: 48, borderRadius: 12, width: '100%', maxWidth: 500, boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)', maxHeight: '90vh', overflowY: 'auto' }} onClick={e => e.stopPropagation()}>
+            <h3 style={{ fontSize: 24, fontWeight: 600, color: theme.textMain, marginBottom: 32 }}>New Workspace</h3>
+            <form onSubmit={handleCreate} style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+              <div>
+                <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: theme.textMuted, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8 }}>Project Title</label>
+                <input value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))} required style={{ width: '100%', padding: '12px 16px', border: `1px solid ${theme.border}`, background: 'white', color: theme.textMain, borderRadius: 6, fontSize: 15, outline: 'none' }} onFocus={e => e.target.style.borderColor = theme.accent} onBlur={e => e.target.style.borderColor = theme.border} />
+              </div>
+              <div>
+                <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: theme.textMuted, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8 }}>Description</label>
+                <input value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} style={{ width: '100%', padding: '12px 16px', border: `1px solid ${theme.border}`, background: 'white', color: theme.textMain, borderRadius: 6, fontSize: 15, outline: 'none' }} onFocus={e => e.target.style.borderColor = theme.accent} onBlur={e => e.target.style.borderColor = theme.border} />
+              </div>
+              <div>
+                <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: theme.textMuted, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8 }}>Technical Vision</label>
+                <textarea value={form.vision} onChange={e => setForm(f => ({ ...f, vision: e.target.value }))} placeholder="What problem does it solve?" style={{ width: '100%', padding: '12px 16px', border: `1px solid ${theme.border}`, background: 'white', color: theme.textMain, borderRadius: 6, fontSize: 15, outline: 'none', minHeight: 120, resize: 'vertical' }} onFocus={e => e.target.style.borderColor = theme.accent} onBlur={e => e.target.style.borderColor = theme.border} />
+              </div>
+              <div style={{ display: 'flex', gap: 16, marginTop: 16 }}>
+                <button type="button" onClick={() => setShowModal(false)} style={{ flex: 1, padding: '12px', background: 'transparent', border: `1px solid ${theme.border}`, borderRadius: 6, fontWeight: 600, color: theme.textMuted, cursor: 'pointer' }}>Cancel</button>
+                <button type="submit" disabled={loading} style={{ flex: 1, padding: '12px', background: theme.accent, border: 'none', borderRadius: 6, fontWeight: 600, color: 'white', cursor: 'pointer' }}>
+                  {loading ? 'Creating...' : 'Create Workspace'}
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
       )}
 
       {/* --- SETTINGS MODAL --- */}
       {showSettings && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.6)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999 }} onClick={() => setShowSettings(false)}>
-          <div style={{ background: theme.bgCard, border: `1px solid ${theme.border}`, padding: 48, borderRadius: 12, width: '100%', maxWidth: 500, boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)' }} onClick={e => e.stopPropagation()}>
+          <div className="modal-content-mobile" style={{ background: theme.bgCard, border: `1px solid ${theme.border}`, padding: 48, borderRadius: 12, width: '100%', maxWidth: 500, boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)', maxHeight: '90vh', overflowY: 'auto' }} onClick={e => e.stopPropagation()}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 32 }}>
               <h3 style={{ fontSize: 24, fontWeight: 600, color: theme.textMain, margin: 0 }}>Account Settings</h3>
               <button onClick={() => setShowSettings(false)} style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: '#64748b' }}>
@@ -401,9 +464,22 @@ export default function Dashboard() {
             </div>
             
             <div style={{ display: 'flex', alignItems: 'center', gap: 20, marginBottom: 32, paddingBottom: 24, borderBottom: `1px solid ${theme.border}` }}>
-               <div style={{ width: 80, height: 80, background: theme.accent, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: 32, fontWeight: 700, fontFamily: 'var(--font-mono)' }}>
-                 {user?.display_name?.charAt(0).toUpperCase() || 'U'}
+               <div 
+                 onClick={() => isEditingProfile && fileInputRef.current?.click()}
+                 style={{ width: 80, height: 80, background: theme.accent, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: 32, fontWeight: 700, fontFamily: 'var(--font-mono)', cursor: isEditingProfile ? 'pointer' : 'default', overflow: 'hidden', position: 'relative' }}
+               >
+                 {(editAvatar || user?.avatar_url) ? (
+                   <img src={editAvatar || user?.avatar_url} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="Avatar" />
+                 ) : (
+                   user?.display_name?.charAt(0).toUpperCase() || 'U'
+                 )}
+                 {isEditingProfile && (
+                   <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                   </div>
+                 )}
                </div>
+               <input type="file" ref={fileInputRef} onChange={handleAvatarChange} style={{ display: 'none' }} accept="image/*" />
                <div style={{ flex: 1 }}>
                  {isEditingProfile ? (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>

@@ -1,0 +1,15 @@
+node_modules/
+.env
+__pycache__/
+*.pyc
+venv/
+dist/
+ai-service/data/
+project_reference.md
+
+# Terraform
+terraform/.terraform/
+terraform/terraform.tfvars
+terraform/*.tfstate
+terraform/*.tfstate.backup
+terraform/.terraform.lock.hcl

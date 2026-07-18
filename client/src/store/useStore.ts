@@ -5,6 +5,7 @@ interface User {
   email: string;
   display_name: string;
   role: 'developer' | 'mentor' | 'admin';
+  avatar_url?: string;
 }
 
 interface Project {

@@ -381,7 +381,7 @@ export default function Deck() {
             {/* Hidden full-size slides for PDF export */}
             <div style={{ position: 'fixed', left: -9999, top: 0, pointerEvents: 'none', zIndex: -1 }}>
               {slides.map((slide, i) => (
-                <div key={i} ref={el => slideRefs.current[i] = el} style={{ width: 960, height: 540 }}>
+                <div key={i} ref={el => { slideRefs.current[i] = el; }} style={{ width: 960, height: 540 }}>
                   <SlideView slide={slide} />
                 </div>
               ))}

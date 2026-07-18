@@ -10,7 +10,6 @@ const COLUMNS = [
   { key: 'done', label: 'Done' },
 ];
 
-const BACKLOG_COLUMN = { key: 'backlog', label: 'Backlog' };
 
 interface Task {
   id: string; title: string; description?: string;

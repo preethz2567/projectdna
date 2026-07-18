@@ -456,6 +456,7 @@ Return ONLY a valid JSON array. No markdown fences, no explanation, just JSON:
     "title": "Slide Title Here",
     "subtitle": "Optional subtitle or tagline (only for title slides)",
     "bullets": ["First key point — be specific", "Second key point with detail", "Third key point"],
+    "icon": "box",
     "type": "title",
     "theme": "{base_theme}",
     "code_snippet": null,
@@ -466,6 +467,7 @@ Return ONLY a valid JSON array. No markdown fences, no explanation, just JSON:
     "title": "System Architecture",
     "subtitle": null,
     "bullets": ["React + TypeScript frontend on CloudFront CDN", "Node.js Express REST API on ECS Fargate", "PostgreSQL on RDS for relational data", "FAISS vector database for AI semantic search"],
+    "icon": "server",
     "type": "content",
     "theme": "{base_theme}",
     "code_snippet": null,
@@ -476,6 +478,7 @@ Return ONLY a valid JSON array. No markdown fences, no explanation, just JSON:
     "title": "Key Code Pattern",
     "subtitle": null,
     "bullets": ["One line explaining what this code does"],
+    "icon": "code",
     "type": "code",
     "theme": "dark",
     "code_snippet": "// actual code from the project\\nconst example = () => {{\\n  return result;\\n}};",
@@ -487,10 +490,12 @@ Return ONLY a valid JSON array. No markdown fences, no explanation, just JSON:
 STRICT RULES:
 - Generate exactly 8-10 slides
 - Slide types MUST be one of: title, content, code, split
-- Themes MUST be one of: {base_theme}, dark, light, accent
+- Themes MUST be one of: navy, dark, light, accent
+- The `icon` field MUST be one of: box, database, server, code, layout, users, rocket, shield, cloud, globe
 - First slide must be type "title" with the real project name and a compelling subtitle
 - Last slide must be type "title" with theme "accent" — key takeaways
 - bullets must be a JSON array of strings, NEVER a single string
+- Do NOT use emojis anywhere in the output. Emojis are strictly forbidden. Use the `icon` field instead.
 - Keep each slide to 3-5 bullets maximum
 - code_snippet must be actual, relevant code from the project context — not pseudocode
 - notes is what the presenter SAYS — different from bullets

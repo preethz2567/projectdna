@@ -99,7 +99,7 @@ export default function Overview() {
           <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderLeft: '4px solid #9333ea', padding: '32px' }}>
              <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 24 }}>
                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#9333ea" strokeWidth="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
-               <span style={{ fontSize: 12, fontWeight: 600, letterSpacing: '0.05em', color: 'var(--text-secondary)' }}>AI WORKSPACE VISION</span>
+               <span style={{ fontSize: 12, fontWeight: 600, letterSpacing: '0.05em', color: 'var(--text-secondary)' }}>WORKSPACE VISION</span>
              </div>
              <p style={{ fontSize: 16, fontWeight: 500, color: 'var(--text)', marginBottom: 16 }}>
                {project?.vision || 'Define your project vision in the settings to guide AI generations.'}
@@ -107,12 +107,7 @@ export default function Overview() {
              <p style={{ fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.6, marginBottom: 24 }}>
                {project?.description}
              </p>
-             <div style={{ display: 'flex', gap: 8 }}>
-               {['Next.js', 'PostgreSQL', 'TypeScript'].map(tag => (
-                 <div key={tag} style={{ background: 'var(--bg)', border: '1px solid var(--border)', padding: '4px 12px', fontSize: 11, fontFamily: 'var(--font-mono)', fontWeight: 700, color: 'var(--text-secondary)' }}>{tag}</div>
-               ))}
-             </div>
-          </div>
+           </div>
 
           <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', padding: '32px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 24 }}>

@@ -10,7 +10,7 @@ export default function ProtectedRoute({ children }: { children: React.ReactNode
   useEffect(() => {
     if (token && !user) {
       getMe().then(data => {
-        updateUser(data.user);
+        updateUser(data);
       }).catch(() => {
         logout();
       }).finally(() => {

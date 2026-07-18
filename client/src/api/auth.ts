@@ -8,5 +8,5 @@ export const login = (data: { email: string; password: string }) =>
 
 export const getMe = () => api.get('/auth/me').then(r => r.data);
 
-export const updateProfile = (data: { display_name: string }) => 
+export const updateProfile = (data: { display_name: string; avatar_url?: string }) => 
   api.put('/auth/me', data).then(r => r.data);
