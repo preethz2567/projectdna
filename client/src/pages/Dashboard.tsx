@@ -19,6 +19,7 @@ export default function Dashboard() {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchIndex, setSearchIndex] = useState<Record<string, Project[]>>({});
   const [showModal, setShowModal] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
   const [form, setForm] = useState({ title: '', description: '', vision: '' });
   const [loading, setLoading] = useState(false);
 
@@ -206,13 +207,9 @@ export default function Dashboard() {
 
           {/* Bottom Settings */}
           <div style={{ marginTop: 'auto', padding: '12px 0', borderTop: `1px solid ${theme.borderSubtle}` }}>
-             <div className="nav-item">
+             <div className="nav-item" onClick={() => setShowSettings(true)}>
                <span className="nav-item-icon"><SettingsIcon /></span>
-               Settings
-             </div>
-             <div className="nav-item">
-               <span className="nav-item-icon"><HelpIcon /></span>
-               Support
+               Settings & Profile
              </div>
              <div className="sidebar-section" onClick={logout} style={{ cursor: 'pointer' }}>
                LOGOUT
@@ -389,30 +386,66 @@ export default function Dashboard() {
       </div>
 
       {/* --- MODAL OVERLAY --- */}
-      {showModal && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.6)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999 }} onClick={() => setShowModal(false)}>
+        </div>
+      )}
+
+      {/* --- SETTINGS MODAL --- */}
+      {showSettings && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.6)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999 }} onClick={() => setShowSettings(false)}>
           <div style={{ background: theme.bgCard, border: `1px solid ${theme.border}`, padding: 48, borderRadius: 12, width: '100%', maxWidth: 500, boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)' }} onClick={e => e.stopPropagation()}>
-            <h3 style={{ fontSize: 24, fontWeight: 600, color: theme.textMain, marginBottom: 32 }}>New Workspace</h3>
-            <form onSubmit={handleCreate} style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 32 }}>
+              <h3 style={{ fontSize: 24, fontWeight: 600, color: theme.textMain, margin: 0 }}>Account Settings</h3>
+              <button onClick={() => setShowSettings(false)} style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: '#64748b' }}>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+              </button>
+            </div>
+            
+            <div style={{ display: 'flex', alignItems: 'center', gap: 20, marginBottom: 32, paddingBottom: 24, borderBottom: `1px solid ${theme.border}` }}>
+               <div style={{ width: 80, height: 80, background: theme.accent, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: 32, fontWeight: 700, fontFamily: 'var(--font-mono)' }}>
+                 {user?.display_name?.charAt(0).toUpperCase() || 'U'}
+               </div>
+               <div style={{ flex: 1 }}>
+                 {isEditingProfile ? (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                       <input autoFocus value={editName} onChange={e => setEditName(e.target.value)} style={{ width: '100%', padding: '10px 12px', borderRadius: 6, border: `1px solid ${theme.border}`, background: 'white', color: theme.textMain, fontSize: 15, outline: 'none' }} placeholder="Full Name" />
+                       <div style={{ display: 'flex', gap: 8 }}>
+                         <button onClick={handleSaveProfile} disabled={profileSaving} style={{ background: theme.accent, border: 'none', color: 'white', padding: '8px 16px', borderRadius: 6, fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>{profileSaving ? 'Saving...' : 'Save Changes'}</button>
+                         <button onClick={() => setIsEditingProfile(false)} style={{ background: 'transparent', border: `1px solid ${theme.border}`, color: theme.textMuted, padding: '8px 16px', borderRadius: 6, fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>Cancel</button>
+                       </div>
+                    </div>
+                 ) : (
+                    <>
+                      <div style={{ fontSize: 20, fontWeight: 600, color: theme.textMain, marginBottom: 4 }}>{user?.display_name}</div>
+                      <div style={{ fontSize: 14, color: theme.textMuted, marginBottom: 12 }}>{user?.email}</div>
+                      <button onClick={() => setIsEditingProfile(true)} style={{ background: '#f1f5f9', border: 'none', color: '#334155', padding: '6px 12px', borderRadius: 4, fontSize: 13, fontWeight: 600, cursor: 'pointer', transition: 'background 0.2s' }} onMouseOver={e=>e.currentTarget.style.background='#e2e8f0'} onMouseOut={e=>e.currentTarget.style.background='#f1f5f9'}>
+                        Edit Profile
+                      </button>
+                    </>
+                 )}
+               </div>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
               <div>
-                <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: theme.textMuted, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8 }}>Project Title</label>
-                <input value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))} required style={{ width: '100%', padding: '12px 16px', border: `1px solid ${theme.border}`, background: 'white', color: theme.textMain, borderRadius: 6, fontSize: 15, outline: 'none' }} onFocus={e => e.target.style.borderColor = theme.accent} onBlur={e => e.target.style.borderColor = theme.border} />
+                <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: theme.textMuted, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4 }}>Role</label>
+                <div style={{ fontSize: 15, color: theme.textMain, fontWeight: 500, textTransform: 'capitalize' }}>{user?.role || 'Developer'}</div>
               </div>
               <div>
-                <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: theme.textMuted, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8 }}>Description</label>
-                <input value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} style={{ width: '100%', padding: '12px 16px', border: `1px solid ${theme.border}`, background: 'white', color: theme.textMain, borderRadius: 6, fontSize: 15, outline: 'none' }} onFocus={e => e.target.style.borderColor = theme.accent} onBlur={e => e.target.style.borderColor = theme.border} />
+                <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: theme.textMuted, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4 }}>System Status</label>
+                <div style={{ fontSize: 15, color: '#10b981', fontWeight: 500, display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                  Active & Connected
+                </div>
               </div>
               <div>
-                <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: theme.textMuted, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8 }}>Technical Vision</label>
-                <textarea value={form.vision} onChange={e => setForm(f => ({ ...f, vision: e.target.value }))} placeholder="What problem does it solve?" style={{ width: '100%', padding: '12px 16px', border: `1px solid ${theme.border}`, background: 'white', color: theme.textMain, borderRadius: 6, fontSize: 15, outline: 'none', minHeight: 120, resize: 'vertical' }} onFocus={e => e.target.style.borderColor = theme.accent} onBlur={e => e.target.style.borderColor = theme.border} />
+                <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: theme.textMuted, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4 }}>Total Projects</label>
+                <div style={{ fontSize: 15, color: theme.textMain, fontWeight: 500 }}>{projects.length} workspaces created</div>
               </div>
-              <div style={{ display: 'flex', gap: 16, marginTop: 16 }}>
-                <button type="button" onClick={() => setShowModal(false)} style={{ flex: 1, padding: '12px', background: 'transparent', border: `1px solid ${theme.border}`, borderRadius: 6, fontWeight: 600, color: theme.textMuted, cursor: 'pointer' }}>Cancel</button>
-                <button type="submit" disabled={loading} style={{ flex: 1, padding: '12px', background: theme.accent, border: 'none', borderRadius: 6, fontWeight: 600, color: 'white', cursor: 'pointer' }}>
-                  {loading ? 'Creating...' : 'Create Workspace'}
-                </button>
-              </div>
-            </form>
+            </div>
+            
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 32 }}>
+               <button onClick={logout} style={{ background: '#fee2e2', border: 'none', color: '#b91c1c', padding: '10px 16px', borderRadius: 6, fontSize: 14, fontWeight: 600, cursor: 'pointer' }}>Sign Out</button>
+            </div>
           </div>
         </div>
       )}

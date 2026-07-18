@@ -36,7 +36,7 @@ export const useStore = create<AppState>((set) => ({
     localStorage.setItem('pdna_token', token);
     set({ user, token });
   },
-  updateUser: (updatedFields) => set((state) => ({ user: state.user ? { ...state.user, ...updatedFields } : null })),
+  updateUser: (updatedFields) => set((state) => ({ user: state.user ? { ...state.user, ...updatedFields } : (updatedFields as User) })),
   setCurrentProject: (project) => set({ currentProject: project }),
   logout: () => {
     localStorage.removeItem('pdna_token');

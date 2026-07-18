@@ -5,9 +5,11 @@ import { generateDeck } from '../../api/ai';
 interface Slide {
   title: string;
   subtitle?: string | null;
-  bullets: string[];
+  bullets?: string[];
+  content?: string;
   type: 'title' | 'content' | 'code' | 'split';
   theme: 'navy' | 'purple' | 'teal' | 'dark' | 'light' | 'accent';
+  icon?: string | null;
   code_snippet?: string | null;
   code_language?: string | null;
   notes?: string;
@@ -15,13 +17,35 @@ interface Slide {
 
 // ── Theme definitions ────────────────────────────────────────────────────
 const THEMES: Record<string, { bg: string; text: string; accent: string; card: string; border: string }> = {
-  navy:   { bg: 'linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%)', text: '#f8fafc', accent: '#60a5fa', card: 'rgba(255,255,255,0.06)', border: 'rgba(96,165,250,0.3)' },
-  purple: { bg: 'linear-gradient(135deg, #1e1b4b 0%, #4c1d95 100%)', text: '#f8fafc', accent: '#a78bfa', card: 'rgba(255,255,255,0.06)', border: 'rgba(167,139,250,0.3)' },
-  teal:   { bg: 'linear-gradient(135deg, #0d2937 0%, #065f46 100%)', text: '#f8fafc', accent: '#34d399', card: 'rgba(255,255,255,0.06)', border: 'rgba(52,211,153,0.3)' },
-  dark:   { bg: '#0a0a0a', text: '#e2e8f0', accent: '#38bdf8', card: 'rgba(255,255,255,0.04)', border: 'rgba(56,189,248,0.2)' },
-  light:  { bg: '#ffffff', text: '#0f172a', accent: '#2563eb', card: '#f8fafc', border: '#e2e8f0' },
-  accent: { bg: 'linear-gradient(135deg, #1d4ed8 0%, #7c3aed 100%)', text: '#ffffff', accent: '#fbbf24', card: 'rgba(255,255,255,0.12)', border: 'rgba(251,191,36,0.4)' },
+  navy:   { bg: 'radial-gradient(circle at 100% 0%, #1e3a8a 0%, #0f172a 100%)', text: '#f8fafc', accent: '#38bdf8', card: 'rgba(255,255,255,0.04)', border: 'rgba(255,255,255,0.08)' },
+  purple: { bg: 'radial-gradient(circle at 0% 100%, #581c87 0%, #09090b 100%)', text: '#f8fafc', accent: '#c084fc', card: 'rgba(255,255,255,0.04)', border: 'rgba(255,255,255,0.08)' },
+  teal:   { bg: 'radial-gradient(circle at 50% 50%, #064e3b 0%, #022c22 100%)', text: '#f8fafc', accent: '#34d399', card: 'rgba(255,255,255,0.04)', border: 'rgba(255,255,255,0.08)' },
+  dark:   { bg: 'linear-gradient(180deg, #18181b 0%, #000000 100%)', text: '#e2e8f0', accent: '#a1a1aa', card: 'rgba(255,255,255,0.03)', border: 'rgba(255,255,255,0.05)' },
+  light:  { bg: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)', text: '#0f172a', accent: '#3b82f6', card: '#ffffff', border: 'rgba(0,0,0,0.05)' },
+  accent: { bg: 'linear-gradient(135deg, #2563eb 0%, #4f46e5 100%)', text: '#ffffff', accent: '#fbbf24', card: 'rgba(0,0,0,0.1)', border: 'rgba(255,255,255,0.2)' },
 };
+
+// ── Icon Graphic ─────────────────────────────────────────────────────────
+function IconGraphic({ icon, color }: { icon?: string | null, color: string }) {
+  if (!icon) return null;
+  const icons: any = {
+    box: <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>,
+    database: <><path d="M3 9v6M21 9v6M3 15v-6a9 3 0 0 1 18 0v6a9 3 0 0 1-18 0z"></path></>,
+    server: <><rect x="2" y="2" width="20" height="8" rx="2" ry="2"></rect><rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect></>,
+    code: <><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></>,
+    layout: <><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></>,
+    users: <><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle></>,
+    rocket: <path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"></path>,
+    shield: <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>,
+    cloud: <path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"></path>,
+    globe: <><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line></>
+  };
+  return (
+    <svg width="240" height="240" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="0.5" style={{ opacity: 0.1, position: 'absolute', right: -40, bottom: -40 }}>
+      {icons[icon] || icons.box}
+    </svg>
+  );
+}
 
 // ── Bullet icon ──────────────────────────────────────────────────────────
 function BulletIcon({ color }: { color: string }) {
@@ -39,6 +63,11 @@ function SlideView({ slide, isThumb = false }: { slide: Slide; isThumb?: boolean
   const scale = isThumb ? 0.28 : 1;
   const w = 960, h = 540;
 
+  // Fallback for older API format that returned 'content' instead of 'bullets'
+  const bullets = slide.bullets && slide.bullets.length > 0 
+    ? slide.bullets 
+    : slide.content ? slide.content.split('\n').map(s => s.replace(/^[•\-\s]+/, '')).filter(Boolean) : [];
+
   return (
     <div style={{
       width: w, height: h,
@@ -51,9 +80,10 @@ function SlideView({ slide, isThumb = false }: { slide: Slide; isThumb?: boolean
       transformOrigin: isThumb ? 'top left' : undefined,
       flexShrink: 0,
     }}>
-      {/* Decorative circles */}
-      <div style={{ position: 'absolute', top: -80, right: -80, width: 300, height: 300, borderRadius: '50%', background: t.accent, opacity: 0.07 }} />
-      <div style={{ position: 'absolute', bottom: -60, left: -60, width: 200, height: 200, borderRadius: '50%', background: t.accent, opacity: 0.06 }} />
+      {/* Decorative circles / SVGs */}
+      <IconGraphic icon={slide.icon} color={t.accent} />
+      <div style={{ position: 'absolute', top: -120, right: -80, width: 300, height: 300, borderRadius: '50%', background: `radial-gradient(circle, ${t.accent} 0%, transparent 70%)`, opacity: 0.15 }} />
+      <div style={{ position: 'absolute', bottom: -100, left: -60, width: 250, height: 250, borderRadius: '50%', background: `radial-gradient(circle, ${t.accent} 0%, transparent 70%)`, opacity: 0.1 }} />
 
       {/* Content */}
       {slide.type === 'title' ? (
@@ -65,9 +95,9 @@ function SlideView({ slide, isThumb = false }: { slide: Slide; isThumb?: boolean
           {slide.subtitle && (
             <p style={{ fontSize: 22, color: t.accent, margin: '20px 0 0', fontWeight: 400, opacity: 0.9 }}>{slide.subtitle}</p>
           )}
-          {slide.bullets && slide.bullets.length > 0 && (
+          {bullets.length > 0 && (
             <ul style={{ listStyle: 'none', padding: 0, margin: '32px 0 0', display: 'flex', flexDirection: 'column', gap: 10 }}>
-              {slide.bullets.map((b, i) => (
+              {bullets.map((b, i) => (
                 <li key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 12, fontSize: 18, opacity: 0.85 }}>
                   <BulletIcon color={t.accent} /><span>{b}</span>
                 </li>
@@ -81,8 +111,8 @@ function SlideView({ slide, isThumb = false }: { slide: Slide; isThumb?: boolean
             <div style={{ width: 4, height: 28, background: t.accent, borderRadius: 2 }} />
             <h2 style={{ fontSize: 28, fontWeight: 700, margin: 0 }}>{slide.title}</h2>
           </div>
-          {slide.bullets && slide.bullets.length > 0 && (
-            <p style={{ fontSize: 16, color: t.accent, margin: '0 0 16px', opacity: 0.9 }}>{slide.bullets[0]}</p>
+          {bullets.length > 0 && (
+            <p style={{ fontSize: 16, color: t.accent, margin: '0 0 16px', opacity: 0.9 }}>{bullets[0]}</p>
           )}
           <div style={{ flex: 1, background: 'rgba(0,0,0,0.5)', borderRadius: 8, padding: '20px 24px', border: `1px solid ${t.border}`, overflow: 'hidden' }}>
             <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
@@ -101,7 +131,7 @@ function SlideView({ slide, isThumb = false }: { slide: Slide; isThumb?: boolean
             <h2 style={{ fontSize: 32, fontWeight: 700, margin: 0, letterSpacing: '-0.01em' }}>{slide.title}</h2>
           </div>
           <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 16 }}>
-            {(slide.bullets || []).map((b, i) => (
+            {bullets.map((b, i) => (
               <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 16, background: t.card, border: `1px solid ${t.border}`, borderRadius: 10, padding: '16px 20px' }}>
                 <BulletIcon color={t.accent} />
                 <span style={{ fontSize: 18, lineHeight: 1.5, flex: 1 }}>{b}</span>
@@ -221,12 +251,16 @@ export default function Deck() {
           });
           s.addShape('rect', { x: 0.5, y: 1.15, w: 0.06, h: 0.5, fill: { color: accentColor } });
 
-          const bulletText = (slide.bullets || []).map(b => ({ text: `• ${b}`, options: { breakLine: true } }));
-          if (bulletText.length > 0) {
+          const bulletsForPPTX = slide.bullets && slide.bullets.length > 0 
+            ? slide.bullets 
+            : slide.content ? slide.content.split('\n').map(s => s.replace(/^[•\-\s]+/, '')).filter(Boolean) : [];
+          
+          const bulletText = bulletsForPPTX.join('\n');
+          if (bulletText) {
             s.addText(bulletText, {
               x: 0.7, y: 1.35, w: 12, h: 4.5,
               fontSize: 16, color: isLight ? '334155' : 'cbd5e1',
-              fontFace: 'Calibri', valign: 'top', lineSpacingMultiple: 1.5
+              fontFace: 'Calibri', valign: 'top', lineSpacingMultiple: 1.5, bullet: true
             });
           }
 

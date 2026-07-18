@@ -3,6 +3,9 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { getRepo, connectRepo } from '../../api/projects';
 import { indexRepo } from '../../api/ai';
 import { useState } from 'react';
+import { z } from 'zod';
+
+const githubUrlSchema = z.string().url().regex(/^https:\/\/(www\.)?github\.com\/[\w-]+\/[\w.-]+$/, 'Must be a valid GitHub repository URL (e.g. https://github.com/user/repo)');
 
 type FileItem = { name: string; type: string; path?: string; size?: number; content?: string };
 
@@ -24,6 +27,13 @@ export default function Repository() {
 
   async function handleConnect(e: React.FormEvent) {
     e.preventDefault();
+    try {
+      githubUrlSchema.parse(url);
+    } catch (err: any) {
+      setIndexMsg(err.errors ? err.errors[0].message : 'Invalid GitHub URL');
+      return;
+    }
+
     setConnecting(true);
     setConnectPhase('connecting');
     try {
@@ -137,7 +147,10 @@ export default function Repository() {
 
         {!repo ? (
           <div className="card">
-            <h3 style={{ fontSize: 14, fontWeight: 600, marginBottom: 12 }}>Connect a GitHub repository</h3>
+            <h3 style={{ fontSize: 16, fontWeight: 600, marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8 }}>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.477 2 2 6.477 2 12c0 4.42 2.865 8.166 6.839 9.489.5.092.682-.217.682-.482 0-.237-.008-.866-.013-1.7-2.782.603-3.369-1.34-3.369-1.34-.454-1.156-1.11-1.462-1.11-1.462-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.831.092-.646.35-1.086.636-1.336-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.578 9.578 0 0 1 12 6.836c.85.004 1.705.114 2.504.336 1.909-1.294 2.747-1.025 2.747-1.025.546 1.377.203 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.743 0 .267.18.578.688.48C19.138 20.161 22 16.418 22 12c0-5.523-4.477-10-10-10z"></path></svg>
+              Connect a GitHub repository
+            </h3>
             <form onSubmit={handleConnect} style={{ display: 'flex', gap: 8 }}>
               <input className="form-input" style={{ flex: 1 }} placeholder="https://github.com/username/repo"
                 value={url} onChange={e => setUrl(e.target.value)} required disabled={connecting} />
@@ -152,8 +165,8 @@ export default function Repository() {
               {/* Repository Info Card */}
               <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-                  <div style={{ background: '#eff6ff', padding: 16, borderRadius: 12, color: '#2563eb' }}>
-                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path></svg>
+                  <div style={{ background: '#181717', padding: 16, borderRadius: 12, color: '#fff' }}>
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.477 2 2 6.477 2 12c0 4.42 2.865 8.166 6.839 9.489.5.092.682-.217.682-.482 0-.237-.008-.866-.013-1.7-2.782.603-3.369-1.34-3.369-1.34-.454-1.156-1.11-1.462-1.11-1.462-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.831.092-.646.35-1.086.636-1.336-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.578 9.578 0 0 1 12 6.836c.85.004 1.705.114 2.504.336 1.909-1.294 2.747-1.025 2.747-1.025.546 1.377.203 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.743 0 .267.18.578.688.48C19.138 20.161 22 16.418 22 12c0-5.523-4.477-10-10-10z"></path></svg>
                   </div>
                   <div>
                     <h3 style={{ margin: 0, fontSize: 20, fontWeight: 700, color: '#0f172a' }}>{repo.repo_owner}/{repo.repo_name}</h3>
