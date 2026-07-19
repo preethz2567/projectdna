@@ -1,6 +1,11 @@
+<div align="center">
+  
 # ProjectDNA
+*/prəˈdʒɛkt.diː.ɛn.eɪ/ • noun • system*
 
 **The Developer's Copilot for Presentations, Code Reviews, and Vivas**
+
+</div>
 
 When you build something great, writing the code is only half the battle. The other half is explaining it. ProjectDNA is built specifically for the moment *after* the code is shipped—when you need to present your architecture to stakeholders, defend your design choices in a technical viva, or seamlessly onboard a new team member. 
 
