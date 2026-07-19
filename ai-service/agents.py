@@ -40,13 +40,14 @@ def chat_agent(repository_id: str, question: str, chat_history: list = []) -> di
     Answers free-form questions about the project.
     Retrieves relevant chunks first, then answers grounded in that context.
     """
-    chunks = retrieve(repository_id, question, top_k=4)
+    chunks = retrieve(repository_id, question, top_k=8)
     context = build_context(chunks)
 
     system_prompt = """You are ProjectDNA, an AI assistant that helps developers understand their software projects.
 Answer questions accurately based ONLY on the repository context provided.
 If the context doesn't contain enough information to answer, say so clearly.
-Be concise and technical. Format code snippets with markdown.""" + ANTI_HALLUCINATION_RULES
+Provide highly detailed, in-depth technical explanations. Structure your answers neatly with markdown headings, bullet points, and code snippets where relevant.
+Do NOT give one-line answers; dive deep into the architecture, context, and rationale.""" + ANTI_HALLUCINATION_RULES
 
     user_message = f"{context}\n\nQuestion: {question}"
 
@@ -480,56 +481,29 @@ Return ONLY a valid JSON array. No markdown fences, no explanation, just JSON:
     "icon": "box",
     "type": "title",
     "theme": "{base_theme}",
-    "code_snippet": null,
-    "code_language": null,
     "notes": "What the presenter should say out loud for this slide"
   }},
   {{
     "title": "System Architecture",
     "subtitle": null,
-    "bullets": ["React + TypeScript frontend on CloudFront CDN", "Node.js Express REST API on ECS Fargate", "PostgreSQL on RDS for relational data", "FAISS vector database for AI semantic search"],
+    "bullets": ["React + TypeScript frontend on CloudFront CDN", "Node.js Express REST API on ECS Fargate", "PostgreSQL on RDS for relational data"],
     "icon": "server",
     "type": "content",
     "theme": "{base_theme}",
-    "code_snippet": null,
-    "code_language": null,
     "notes": "Explain why each layer was chosen and how they connect"
-  }},
-  {{
-    "title": "System Architecture Diagram",
-    "subtitle": null,
-    "bullets": ["Visual overview of our infrastructure", "Key component interactions"],
-    "icon": "layout",
-    "type": "diagram",
-    "theme": "{base_theme}",
-    "diagram_code": "graph TD\\n A-->B",
-    "notes": "Walk through the components shown in the diagram."
-  }},
-  {{
-    "title": "Key Code Pattern",
-    "subtitle": null,
-    "bullets": ["One line explaining what this code does"],
-    "icon": "code",
-    "type": "code",
-    "theme": "dark",
-    "code_snippet": "// actual code from the project\\nconst example = () => {{\\n  return result;\\n}};",
-    "code_language": "javascript",
-    "notes": "Walk through what this code accomplishes"
   }}
 ]
 
 STRICT RULES:
 - Generate exactly 10-12 slides to provide comprehensive coverage.
-- Slide types MUST be one of: title, content, code, split, diagram
+- Slide types MUST be one of: title, content
 - Themes MUST be one of: navy, dark, light, accent
 - The `icon` field MUST be one of: box, database, server, code, layout, users, rocket, shield, cloud, globe, star, zap
 - First slide must be type "title" with the real project name and a compelling subtitle
 - Last slide must be type "title" with theme "accent" — key takeaways
 - bullets must be a JSON array of strings, NEVER a single string
 - Do NOT use emojis anywhere in the output. Emojis are strictly forbidden. Use the `icon` field instead.
-- Keep each slide to 4-6 bullets maximum. Make bullets extremely precise, deeply technical, and highly informative. Expand on details to make the presentation rich in content.
-- For type "code", `code_snippet` MUST be actual, relevant code from the project context. If you cannot find relevant code, change the type to "content". NEVER output "No code snippet" or empty strings.
-- For type "diagram", `diagram_code` MUST be a valid Mermaid JS diagram (e.g., `graph TD`). If a diagram is listed in AVAILABLE ARCHITECTURE DIAGRAMS, use its exact code if possible, or leave `diagram_code` null so the backend can inject it. If NO diagrams are available, you MUST generate your own valid Mermaid graph code based on the project architecture.
+- Keep each slide to 4-6 bullets maximum. Make bullets extremely precise, deeply technical, and highly structured. Expand on details to make the presentation rich in content.
 - notes is what the presenter SAYS — different from bullets
 - Be 100% specific to THIS project — real names, real tech, real decisions
 - Do NOT use placeholder text like "Project Name" — use the actual project name
@@ -556,6 +530,17 @@ STRICT RULES:
                 slide['bullets'] = lines
             if not isinstance(slide.get('bullets'), list):
                 slide['bullets'] = []
+            
+            # Clean markdown bold/italics from bullets
+            cleaned_bullets = []
+            for b in slide['bullets']:
+                if isinstance(b, str):
+                    import re
+                    # Remove ** or * markdown
+                    b = re.sub(r'[*_]{1,2}', '', b)
+                    cleaned_bullets.append(b.strip())
+            slide['bullets'] = cleaned_bullets
+
             # Ensure theme is set
             if not slide.get('theme'):
                 slide['theme'] = base_theme

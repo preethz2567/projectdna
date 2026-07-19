@@ -1,9 +1,11 @@
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useStore } from '../store/useStore';
 
 export default function Home() {
   const navigate = useNavigate();
   const { user } = useStore();
+  const [showModal, setShowModal] = useState(false);
 
   return (
     <div style={{ background: '#faf9f6', minHeight: '100vh', display: 'flex', flexDirection: 'column', overflowY: 'auto' }}>
@@ -112,7 +114,7 @@ export default function Home() {
                <button className="btn" style={{ background: 'var(--accent)', color: 'white', borderRadius: 4, padding: '16px 32px', fontSize: 15, fontWeight: 600, border: 'none' }} onClick={() => navigate('/register')}>
                  Start Free Workspace
                </button>
-               <button className="btn" style={{ background: 'transparent', color: 'var(--text)', border: '1px solid var(--border)', borderRadius: 4, padding: '16px 32px', fontSize: 15, fontWeight: 600 }}>
+               <button className="btn" style={{ background: 'transparent', color: 'var(--text)', border: '2px solid var(--text)', borderRadius: 4, padding: '15px 31px', fontSize: 15, fontWeight: 600 }} onClick={() => setShowModal(true)}>
                  Learn More
                </button>
             </div>
@@ -346,6 +348,20 @@ export default function Home() {
           </div>
         </div>
       </footer>
+      {showModal && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.6)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ background: '#ffffff', padding: '48px', maxWidth: 600, width: '90%', position: 'relative', border: '1px solid var(--border)' }}>
+            <button onClick={() => setShowModal(false)} style={{ position: 'absolute', top: 24, right: 24, background: 'transparent', border: 'none', fontSize: 24, cursor: 'pointer', color: 'var(--text)' }}>×</button>
+            <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: 32, marginBottom: 24, color: 'var(--text)', fontWeight: 400 }}>About <span style={{ fontStyle: 'italic', fontWeight: 600 }}>ProjectDNA</span></h2>
+            <p style={{ fontFamily: 'var(--font-sans)', fontSize: 16, lineHeight: 1.6, color: 'var(--text-secondary)', marginBottom: 24 }}>
+              ProjectDNA is an intelligent code analysis and revision system designed exclusively for developers preparing for presentations, vivas, and code reviews.
+            </p>
+            <p style={{ fontFamily: 'var(--font-sans)', fontSize: 16, lineHeight: 1.6, color: 'var(--text-secondary)' }}>
+              By connecting your GitHub repository, our platform parses your codebase to instantly generate high-fidelity architecture diagrams, contextual documentation, and interactive mock interviews tailored to your exact tech stack.
+            </p>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

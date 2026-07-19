@@ -372,7 +372,10 @@ export default function Dashboard() {
             ) : (
                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))', gap: 24 }}>
                  {filteredProjects.map((p, i) => {
-                   const mockTags = p.description ? p.description.split(' ').slice(0, 3).filter(t=>t.length>3) : ['React', 'Node', 'API'];
+                   const techKeywords = ['React', 'Node', 'API', 'Python', 'AWS', 'Docker', 'TypeScript', 'PostgreSQL', 'SQL', 'Express', 'CSS', 'HTML', 'JavaScript', 'Java', 'AI', 'ML', 'Go', 'Next.js', 'NestJS', 'GraphQL'];
+                   const text = `${p.title} ${p.description} ${p.vision}`.toLowerCase();
+                   let mockTags = techKeywords.filter(k => text.includes(k.toLowerCase())).slice(0, 3);
+                   if (mockTags.length === 0) mockTags = ['Web', 'App', 'Tech'];
                    const isNew = i % 3 === 0;
                    
                    return (
@@ -387,17 +390,14 @@ export default function Dashboard() {
                         {/* Title & Info */}
                         <div style={{ paddingRight: 100 }}>
                           <h3 style={{ fontFamily: '"Segoe UI", "Open Sans", sans-serif', fontSize: 22, fontWeight: 500, color: '#0f172a', margin: '0 0 12px 0', lineHeight: 1.3 }}>{p.title}</h3>
-                          <div style={{ fontSize: 16, color: '#64748b', marginBottom: 12 }}>
-                            Start Date: {new Date(p.created_at).toLocaleDateString('en-GB')}
-                          </div>
                           <div style={{ fontSize: 16, color: '#64748b', marginBottom: 24 }}>
-                            Mentorship: NoMentor
+                            Start Date: {new Date(p.created_at).toLocaleDateString('en-GB')}
                           </div>
                         </div>
 
                         {/* Clusters */}
                         <div>
-                           <div style={{ fontSize: 16, color: '#64748b', marginBottom: 12 }}>Clusters</div>
+                           <div style={{ fontSize: 16, color: '#64748b', marginBottom: 12 }}>Tech Stack</div>
                            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                              {mockTags.map((tag, idx) => (
                                <span key={idx} style={{ fontSize: 12, fontWeight: 700, color: '#000000', border: `1px solid #e2e8f0`, padding: '6px 14px', borderRadius: 20 }}>
