@@ -252,7 +252,7 @@ resource "aws_ecs_service" "app" {
   }
 
   # Allow CodePipeline/CodeDeploy to update this service
-  # lifecycle { ignore_changes = [task_definition] }
+  lifecycle { ignore_changes = [task_definition] }
   # Uncomment the above after first deploy — prevents Terraform from
   # overwriting CodePipeline's task definition updates
 }
