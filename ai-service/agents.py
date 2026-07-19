@@ -425,7 +425,7 @@ Make questions specific to THIS project. Test architectural decisions, not gener
 
 
 # ── Agent 8: Deck Generator ──────────────────────────────────────────────
-def deck_agent(repository_id: str, deck_type: str = 'technical') -> dict:
+def deck_agent(repository_id: str, project_id: str = None, deck_type: str = 'technical') -> dict:
     """
     Generates rich, Gamma-style structured presentation slides.
     deck_type: 'technical' | 'demo' | 'interview'
@@ -433,6 +433,27 @@ def deck_agent(repository_id: str, deck_type: str = 'technical') -> dict:
     """
     chunks = retrieve(repository_id, 'project overview architecture features deployment tech stack goals purpose', top_k=10)
     context = build_context(chunks)
+
+    diagram_context = ""
+    diagrams_map = {}
+    if project_id:
+        from rag import get_db
+        try:
+            conn = get_db()
+            cursor = conn.cursor()
+            cursor.execute("SELECT diagram_type, code FROM diagrams WHERE project_id = %s", (project_id,))
+            rows = cursor.fetchall()
+            for row in rows:
+                dtype, code = row
+                diagrams_map[dtype] = code
+                diagram_context += f"- Diagram available: {dtype.upper()}\n"
+            cursor.close()
+            conn.close()
+        except Exception as e:
+            print(f"Error fetching diagrams: {e}")
+    
+    if diagram_context:
+        context += f"\n\nAVAILABLE ARCHITECTURE DIAGRAMS (Use these in 'diagram' type slides):\n{diagram_context}"
 
     deck_configs = {
         'technical': 'a deep technical presentation for engineers — cover system architecture, tech stack decisions, database design, deployment pipeline, API design, and challenges solved',
@@ -475,6 +496,16 @@ Return ONLY a valid JSON array. No markdown fences, no explanation, just JSON:
     "notes": "Explain why each layer was chosen and how they connect"
   }},
   {{
+    "title": "System Architecture Diagram",
+    "subtitle": null,
+    "bullets": ["Visual overview of our infrastructure", "Key component interactions"],
+    "icon": "layout",
+    "type": "diagram",
+    "theme": "{base_theme}",
+    "diagram_code": "graph TD\\n A-->B",
+    "notes": "Walk through the components shown in the diagram."
+  }},
+  {{
     "title": "Key Code Pattern",
     "subtitle": null,
     "bullets": ["One line explaining what this code does"],
@@ -489,7 +520,7 @@ Return ONLY a valid JSON array. No markdown fences, no explanation, just JSON:
 
 STRICT RULES:
 - Generate exactly 8-10 slides
-- Slide types MUST be one of: title, content, code, split
+- Slide types MUST be one of: title, content, code, split, diagram
 - Themes MUST be one of: navy, dark, light, accent
 - The `icon` field MUST be one of: box, database, server, code, layout, users, rocket, shield, cloud, globe
 - First slide must be type "title" with the real project name and a compelling subtitle
@@ -497,11 +528,13 @@ STRICT RULES:
 - bullets must be a JSON array of strings, NEVER a single string
 - Do NOT use emojis anywhere in the output. Emojis are strictly forbidden. Use the `icon` field instead.
 - Keep each slide to 3-5 bullets maximum. Make bullets precise, technical, and informative — not vague.
-- code_snippet must be actual, relevant code from the project context — not pseudocode
+- For type "code", `code_snippet` MUST be actual, relevant code from the project context. If you cannot find relevant code, change the type to "content". NEVER output "No code snippet" or empty strings.
+- For type "diagram", `diagram_code` MUST be the EXACT Mermaid code of the requested diagram if it is available. If you don't know the code, just leave it as null, and the backend will inject it based on the title.
 - notes is what the presenter SAYS — different from bullets
 - Be 100% specific to THIS project — real names, real tech, real decisions
 - Do NOT use placeholder text like "Project Name" — use the actual project name
-- Write professional, formal technical English. No casual language, no marketing fluff.
+- Write professional, formal technical English. No casual language, no marketing fluff.""" + ANTI_HALLUCINATION_RULES
+
 
     user_message = f"{context}\n\nGenerate a professional {deck_type} presentation deck."
     raw = call_llm(system_prompt, user_message, max_tokens=4000)
@@ -515,7 +548,7 @@ STRICT RULES:
         else:
             slides = []
 
-        # Normalise: ensure bullets is always a list
+        # Normalise: ensure bullets is always a list, and inject diagrams
         for slide in slides:
             if isinstance(slide.get('bullets'), str):
                 # Convert newline-separated string to list
@@ -526,6 +559,20 @@ STRICT RULES:
             # Ensure theme is set
             if not slide.get('theme'):
                 slide['theme'] = base_theme
+            
+            # Inject diagram code if missing but type is diagram
+            if slide.get('type') == 'diagram':
+                title_lower = slide.get('title', '').lower()
+                matched_type = None
+                for dtype in diagrams_map.keys():
+                    if dtype in title_lower:
+                        matched_type = dtype
+                        break
+                if not matched_type and diagrams_map:
+                    matched_type = list(diagrams_map.keys())[0] # Fallback to first diagram
+                
+                if matched_type:
+                    slide['diagram_code'] = diagrams_map[matched_type]
 
     except Exception:
         slides = []

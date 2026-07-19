@@ -1,28 +1,31 @@
 import { useParams } from 'react-router-dom';
 import { useState, useEffect, useRef } from 'react';
 import { generateDeck } from '../../api/ai';
+import MermaidDiagram from '../../components/MermaidDiagram';
 
 interface Slide {
   title: string;
   subtitle?: string | null;
   bullets?: string[];
   content?: string;
-  type: 'title' | 'content' | 'code' | 'split';
+  type: 'title' | 'content' | 'code' | 'split' | 'diagram';
   theme: 'navy' | 'purple' | 'teal' | 'dark' | 'light' | 'accent';
   icon?: string | null;
   code_snippet?: string | null;
   code_language?: string | null;
+  diagram_code?: string | null;
   notes?: string;
 }
 
 // ── Theme definitions ────────────────────────────────────────────────────
+// Refined Deskline UI style: Sharp edges, minimal gradients, high contrast
 const THEMES: Record<string, { bg: string; text: string; accent: string; card: string; border: string }> = {
-  navy:   { bg: 'radial-gradient(circle at 100% 0%, #1e3a8a 0%, #0f172a 100%)', text: '#f8fafc', accent: '#38bdf8', card: 'rgba(255,255,255,0.04)', border: 'rgba(255,255,255,0.08)' },
-  purple: { bg: 'radial-gradient(circle at 0% 100%, #581c87 0%, #09090b 100%)', text: '#f8fafc', accent: '#c084fc', card: 'rgba(255,255,255,0.04)', border: 'rgba(255,255,255,0.08)' },
-  teal:   { bg: 'radial-gradient(circle at 50% 50%, #064e3b 0%, #022c22 100%)', text: '#f8fafc', accent: '#34d399', card: 'rgba(255,255,255,0.04)', border: 'rgba(255,255,255,0.08)' },
-  dark:   { bg: 'linear-gradient(180deg, #18181b 0%, #000000 100%)', text: '#e2e8f0', accent: '#a1a1aa', card: 'rgba(255,255,255,0.03)', border: 'rgba(255,255,255,0.05)' },
-  light:  { bg: 'linear-gradient(160deg, #ffffff 0%, #f1f5f9 100%)', text: '#0f172a', accent: '#2563eb', card: '#f8fafc', border: 'rgba(0,0,0,0.07)' },
-  accent: { bg: 'linear-gradient(135deg, #1e40af 0%, #4338ca 100%)', text: '#ffffff', accent: '#fbbf24', card: 'rgba(0,0,0,0.1)', border: 'rgba(255,255,255,0.2)' },
+  navy:   { bg: '#0f172a', text: '#f8fafc', accent: '#38bdf8', card: '#1e293b', border: '#334155' },
+  purple: { bg: '#2e1065', text: '#f8fafc', accent: '#c084fc', card: '#3b0764', border: '#581c87' },
+  teal:   { bg: '#022c22', text: '#f8fafc', accent: '#34d399', card: '#064e3b', border: '#065f46' },
+  dark:   { bg: '#09090b', text: '#fafafa', accent: '#a1a1aa', card: '#18181b', border: '#27272a' },
+  light:  { bg: '#ffffff', text: '#09090b', accent: '#2563eb', card: '#f4f4f5', border: '#e4e4e7' },
+  accent: { bg: '#1e40af', text: '#ffffff', accent: '#fbbf24', card: '#1e3a8a', border: '#1d4ed8' },
 };
 
 // ── Icon Graphic ─────────────────────────────────────────────────────────
@@ -108,31 +111,57 @@ function SlideView({ slide, isThumb = false }: { slide: Slide; isThumb?: boolean
       ) : slide.type === 'code' ? (
         <div style={{ display: 'flex', flexDirection: 'column', height: '100%', padding: '40px 60px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 24 }}>
-            <div style={{ width: 4, height: 28, background: t.accent, borderRadius: 2 }} />
+            <div style={{ width: 4, height: 28, background: t.accent }} />
             <h2 style={{ fontSize: 28, fontWeight: 700, margin: 0 }}>{slide.title}</h2>
           </div>
           {bullets.length > 0 && (
             <p style={{ fontSize: 16, color: t.accent, margin: '0 0 16px', opacity: 0.9 }}>{bullets[0]}</p>
           )}
-          <div style={{ flex: 1, background: 'rgba(0,0,0,0.5)', borderRadius: 8, padding: '20px 24px', border: `1px solid ${t.border}`, overflow: 'hidden' }}>
+          <div style={{ flex: 1, background: '#1e1e1e', padding: '20px 24px', border: `1px solid ${t.border}`, overflow: 'hidden' }}>
             <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
-              {['#ff5f57', '#febc2e', '#28c840'].map(c => <div key={c} style={{ width: 12, height: 12, borderRadius: '50%', background: c }} />)}
+              {['#ff5f57', '#febc2e', '#28c840'].map(c => <div key={c} style={{ width: 10, height: 10, background: c }} />)}
             </div>
-            <pre style={{ margin: 0, fontSize: 14, lineHeight: 1.7, color: '#e2e8f0', fontFamily: '"JetBrains Mono", "Fira Code", monospace', whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
-              {slide.code_snippet || '// No code snippet'}
+            <pre style={{ margin: 0, fontSize: 13, lineHeight: 1.6, color: '#d4d4d4', fontFamily: '"JetBrains Mono", "Fira Code", monospace', whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
+              {slide.code_snippet}
             </pre>
+          </div>
+        </div>
+      ) : slide.type === 'diagram' ? (
+        <div style={{ display: 'flex', flexDirection: 'column', height: '100%', padding: '40px 60px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
+            <div style={{ width: 4, height: 28, background: t.accent }} />
+            <h2 style={{ fontSize: 28, fontWeight: 700, margin: 0 }}>{slide.title}</h2>
+          </div>
+          <div style={{ flex: 1, display: 'flex', gap: 32, alignItems: 'center' }}>
+            <div style={{ flex: 1, height: '100%', background: t.card, border: `1px solid ${t.border}`, padding: '16px', display: 'flex', justifyContent: 'center', alignItems: 'center', overflow: 'hidden' }}>
+              {slide.diagram_code ? (
+                <div style={{ width: '100%', height: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', transform: 'scale(0.85)', transformOrigin: 'center' }}>
+                  <MermaidDiagram code={slide.diagram_code} />
+                </div>
+              ) : (
+                <div style={{ opacity: 0.5, fontSize: 14 }}>[Diagram code missing]</div>
+              )}
+            </div>
+            <div style={{ width: '35%', display: 'flex', flexDirection: 'column', gap: 16 }}>
+              {bullets.map((b, i) => (
+                <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
+                  <BulletIcon color={t.accent} />
+                  <span style={{ fontSize: 16, lineHeight: 1.5 }}>{b}</span>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       ) : (
         // content / split
         <div style={{ display: 'flex', flexDirection: 'column', height: '100%', padding: '40px 60px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 32 }}>
-            <div style={{ width: 4, height: 28, background: t.accent, borderRadius: 2 }} />
+            <div style={{ width: 4, height: 28, background: t.accent }} />
             <h2 style={{ fontSize: 32, fontWeight: 700, margin: 0, letterSpacing: '-0.01em' }}>{slide.title}</h2>
           </div>
           <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 16 }}>
             {bullets.map((b, i) => (
-              <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 16, background: t.card, border: `1px solid ${t.border}`, borderRadius: 10, padding: '16px 20px' }}>
+              <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 16, background: t.card, border: `1px solid ${t.border}`, padding: '16px 20px' }}>
                 <BulletIcon color={t.accent} />
                 <span style={{ fontSize: 18, lineHeight: 1.5, flex: 1 }}>{b}</span>
               </div>
@@ -270,6 +299,13 @@ export default function Deck() {
               fontSize: 11, fontFace: 'Courier New',
               color: 'e2e8f0', fill: { color: '1e293b' },
               valign: 'top'
+            });
+          } else if (slide.type === 'diagram') {
+            s.addText('[ Interactive Architecture Diagram ]\n\nPlease view this presentation in the web app to see the interactive diagram.', {
+              x: 0.5, y: 3.0, w: 12, h: 2.0,
+              fontSize: 16, fontFace: 'Calibri', bold: true, align: 'center',
+              color: isLight ? '334155' : 'cbd5e1', fill: { color: isLight ? 'e2e8f0' : '1e293b' },
+              valign: 'middle'
             });
           }
         }
