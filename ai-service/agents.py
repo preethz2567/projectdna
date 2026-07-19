@@ -519,17 +519,17 @@ Return ONLY a valid JSON array. No markdown fences, no explanation, just JSON:
 ]
 
 STRICT RULES:
-- Generate exactly 8-10 slides
+- Generate exactly 10-12 slides to provide comprehensive coverage.
 - Slide types MUST be one of: title, content, code, split, diagram
 - Themes MUST be one of: navy, dark, light, accent
-- The `icon` field MUST be one of: box, database, server, code, layout, users, rocket, shield, cloud, globe
+- The `icon` field MUST be one of: box, database, server, code, layout, users, rocket, shield, cloud, globe, star, zap
 - First slide must be type "title" with the real project name and a compelling subtitle
 - Last slide must be type "title" with theme "accent" — key takeaways
 - bullets must be a JSON array of strings, NEVER a single string
 - Do NOT use emojis anywhere in the output. Emojis are strictly forbidden. Use the `icon` field instead.
-- Keep each slide to 3-5 bullets maximum. Make bullets precise, technical, and informative — not vague.
+- Keep each slide to 4-6 bullets maximum. Make bullets extremely precise, deeply technical, and highly informative. Expand on details to make the presentation rich in content.
 - For type "code", `code_snippet` MUST be actual, relevant code from the project context. If you cannot find relevant code, change the type to "content". NEVER output "No code snippet" or empty strings.
-- For type "diagram", `diagram_code` MUST be the EXACT Mermaid code of the requested diagram if it is available. If you don't know the code, just leave it as null, and the backend will inject it based on the title.
+- For type "diagram", `diagram_code` MUST be a valid Mermaid JS diagram (e.g., `graph TD`). If a diagram is listed in AVAILABLE ARCHITECTURE DIAGRAMS, use its exact code if possible, or leave `diagram_code` null so the backend can inject it. If NO diagrams are available, you MUST generate your own valid Mermaid graph code based on the project architecture.
 - notes is what the presenter SAYS — different from bullets
 - Be 100% specific to THIS project — real names, real tech, real decisions
 - Do NOT use placeholder text like "Project Name" — use the actual project name
@@ -562,6 +562,7 @@ STRICT RULES:
             
             # Inject diagram code if missing but type is diagram
             if slide.get('type') == 'diagram':
+                # Only inject if the LLM left it null/empty, or we have a confirmed DB match
                 title_lower = slide.get('title', '').lower()
                 matched_type = None
                 for dtype in diagrams_map.keys():
@@ -571,8 +572,12 @@ STRICT RULES:
                 if not matched_type and diagrams_map:
                     matched_type = list(diagrams_map.keys())[0] # Fallback to first diagram
                 
+                # If backend found a match in DB, inject it
                 if matched_type:
                     slide['diagram_code'] = diagrams_map[matched_type]
+                # If no match in DB, but the slide has no code, provide a default so it doesn't break
+                elif not slide.get('diagram_code'):
+                    slide['diagram_code'] = "graph TD\n  A[Architecture] --> B[Not Found]\n  B --> C[Please generate in Diagrams tab]"
 
     except Exception:
         slides = []
