@@ -96,6 +96,21 @@ resource "aws_iam_role_policy_attachment" "ecs_execution_policy" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
 }
 
+resource "aws_iam_role_policy" "ecs_execution_ssm_policy" {
+  name = "projectdna-ecs-execution-ssm-policy"
+  role = aws_iam_role.ecs_execution_role.id
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect   = "Allow"
+        Action   = ["ssm:GetParameters", "ssm:GetParameter"]
+        Resource = "arn:aws:ssm:${var.aws_region}:${var.aws_account_id}:parameter/projectdna/*"
+      }
+    ]
+  })
+}
+
 # ── IAM role for ECS task (app permissions) ──────────────────────────────
 resource "aws_iam_role" "ecs_task_role" {
   name = "projectdna-ecs-task-role"
