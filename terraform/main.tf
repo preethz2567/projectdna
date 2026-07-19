@@ -219,6 +219,10 @@ resource "aws_ecs_task_definition" "app" {
         { name = "FAISS_INDEX_PATH", value = "/tmp/faiss" },
         { name = "AWS_REGION",       value = var.aws_region },
         { name = "FAISS_S3_BUCKET",  value = aws_s3_bucket.faiss.bucket },
+        { name = "DB_HOST",          value = data.aws_db_instance.existing.address },
+        { name = "DB_PORT",          value = "5432" },
+        { name = "DB_NAME",          value = "projectdna" },
+        { name = "DB_USER",          value = "postgres" },
       ]
       secrets = [
         { name = "OPENROUTER_API_KEY", valueFrom = aws_ssm_parameter.openrouter_key.arn },
