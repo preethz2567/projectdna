@@ -60,14 +60,65 @@ export default function Experiences() {
     <div>
       <div className="page-header">
         <h2>Experience Log</h2>
-        <button className="btn btn-primary btn-sm" onClick={() => setShowForm(true)}>+ Log experience</button>
+        {!showForm && <button className="btn btn-primary btn-sm" onClick={() => setShowForm(true)}>+ Log experience</button>}
       </div>
       <div className="page-content">
         <div style={{ marginBottom: 16, padding: '10px 12px', background: '#eff6ff', border: '1px solid #bfdbfe', fontSize: 13 }}>
           💡 Log every interview, hackathon, and presentation. The AI uses this history to prepare you better next time.
         </div>
 
-        {(experiences as Experience[]).length === 0 ? (
+        {showForm && (
+          <div className="card mb-4" style={{ border: '1px solid var(--border)', boxShadow: 'var(--shadow)' }}>
+            <h3 style={{ marginBottom: 16, fontSize: 16 }}>Log New Experience</h3>
+            <form onSubmit={handleSubmit}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                <div className="form-group">
+                  <label className="form-label">Type</label>
+                  <select className="form-input" value={form.experience_type}
+                    onChange={e => setForm(f => ({ ...f, experience_type: e.target.value }))}>
+                    {EXP_TYPES.map(t => <option key={t} value={t} style={{ textTransform: 'capitalize' }}>{t}</option>)}
+                  </select>
+                </div>
+                <div className="form-group">
+                  <label className="form-label">Company / Event</label>
+                  <input className="form-input" value={form.company_or_event}
+                    onChange={e => setForm(f => ({ ...f, company_or_event: e.target.value }))} required />
+                </div>
+              </div>
+              <div className="form-group">
+                <label className="form-label">Date</label>
+                <input className="form-input" type="date" value={form.date}
+                  onChange={e => setForm(f => ({ ...f, date: e.target.value }))} />
+              </div>
+              <div className="form-group">
+                <label className="form-label">Questions asked (one per line)</label>
+                <textarea className="form-input" rows={4} value={form.questions_asked}
+                  onChange={e => setForm(f => ({ ...f, questions_asked: e.target.value }))}
+                  placeholder="Explain your authentication system&#10;Why did you choose PostgreSQL?&#10;How would you scale this?" />
+              </div>
+              <div className="form-group">
+                <label className="form-label">What went wrong / what you couldn't answer</label>
+                <textarea className="form-input" rows={3} value={form.what_went_wrong}
+                  onChange={e => setForm(f => ({ ...f, what_went_wrong: e.target.value }))}
+                  placeholder="I couldn't explain the database indexing strategy clearly..." />
+              </div>
+              <div className="form-group">
+                <label className="form-label">Feedback received</label>
+                <textarea className="form-input" rows={3} value={form.feedback_received}
+                  onChange={e => setForm(f => ({ ...f, feedback_received: e.target.value }))}
+                  placeholder="They liked the Terraform setup but wanted more test coverage..." />
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginTop: 16 }}>
+                <button type="button" className="btn btn-secondary" onClick={() => setShowForm(false)}>Cancel</button>
+                <button type="submit" className="btn btn-primary" disabled={saving}>
+                  {saving ? 'Saving...' : 'Save experience'}
+                </button>
+              </div>
+            </form>
+          </div>
+        )}
+
+        {(experiences as Experience[]).length === 0 && !showForm ? (
           <div className="empty-state">
             <p>No experiences logged yet.</p>
             <p style={{ marginTop: 8, fontSize: 12 }}>Log your first interview or hackathon to build your memory bank.</p>
@@ -109,59 +160,6 @@ export default function Experiences() {
           ))
         )}
       </div>
-
-      {showForm && (
-        <div className="modal-overlay" onClick={() => setShowForm(false)}>
-          <div className="modal" style={{ maxWidth: 520 }} onClick={e => e.stopPropagation()}>
-            <h3>Log experience</h3>
-            <form onSubmit={handleSubmit}>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-                <div className="form-group">
-                  <label className="form-label">Type</label>
-                  <select className="form-input" value={form.experience_type}
-                    onChange={e => setForm(f => ({ ...f, experience_type: e.target.value }))}>
-                    {EXP_TYPES.map(t => <option key={t} value={t} style={{ textTransform: 'capitalize' }}>{t}</option>)}
-                  </select>
-                </div>
-                <div className="form-group">
-                  <label className="form-label">Company / Event</label>
-                  <input className="form-input" value={form.company_or_event}
-                    onChange={e => setForm(f => ({ ...f, company_or_event: e.target.value }))} required />
-                </div>
-              </div>
-              <div className="form-group">
-                <label className="form-label">Date</label>
-                <input className="form-input" type="date" value={form.date}
-                  onChange={e => setForm(f => ({ ...f, date: e.target.value }))} />
-              </div>
-              <div className="form-group">
-                <label className="form-label">Questions asked (one per line)</label>
-                <textarea className="form-input" rows={4} value={form.questions_asked}
-                  onChange={e => setForm(f => ({ ...f, questions_asked: e.target.value }))}
-                  placeholder="Explain your authentication system&#10;Why did you choose PostgreSQL?&#10;How would you scale this?" />
-              </div>
-              <div className="form-group">
-                <label className="form-label">What went wrong / what you couldn't answer</label>
-                <textarea className="form-input" rows={3} value={form.what_went_wrong}
-                  onChange={e => setForm(f => ({ ...f, what_went_wrong: e.target.value }))}
-                  placeholder="I couldn't explain the database indexing strategy clearly..." />
-              </div>
-              <div className="form-group">
-                <label className="form-label">Feedback received</label>
-                <textarea className="form-input" rows={3} value={form.feedback_received}
-                  onChange={e => setForm(f => ({ ...f, feedback_received: e.target.value }))}
-                  placeholder="They liked the Terraform setup but wanted more test coverage..." />
-              </div>
-              <div className="modal-footer">
-                <button type="button" className="btn btn-secondary" onClick={() => setShowForm(false)}>Cancel</button>
-                <button type="submit" className="btn btn-primary" disabled={saving}>
-                  {saving ? 'Saving...' : 'Save experience'}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

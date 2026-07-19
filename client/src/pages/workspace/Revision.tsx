@@ -24,6 +24,8 @@ export default function Revision() {
     try {
       const r = await generateRevision(projectId!);
       setGuide(r.guide);
+    } catch (err: any) {
+      alert(err.response?.data?.error || err.message || 'Failed to generate revision guide');
     } finally {
       setLoading(false);
     }

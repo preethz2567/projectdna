@@ -43,28 +43,12 @@ export default function Feedback() {
     <div>
       <div className="page-header">
         <h2>Feedback</h2>
-        <button className="btn btn-primary btn-sm" onClick={() => setShowForm(true)}>+ Add feedback</button>
+        {!showForm && <button className="btn btn-primary btn-sm" onClick={() => setShowForm(true)}>+ Add feedback</button>}
       </div>
       <div className="page-content">
-        {(feedback as Feedback[]).length === 0 ? (
-          <div className="empty-state"><p>No feedback yet. Mentors can add structured feedback here.</p></div>
-        ) : (
-          (feedback as Feedback[]).map(f => (
-            <div key={f.id} className="card mb-4" style={{ borderLeft: '3px solid var(--accent)', background: categoryColor[f.category] || 'white' }}>
-              <div className="flex-between mb-4">
-                <span className="tag" style={{ textTransform: 'capitalize' }}>{f.category}</span>
-                <span className="text-muted">{f.author_name} · {new Date(f.created_at).toLocaleDateString()}</span>
-              </div>
-              <p style={{ fontSize: 13, lineHeight: 1.6 }}>{f.content}</p>
-            </div>
-          ))
-        )}
-      </div>
-
-      {showForm && (
-        <div className="modal-overlay" onClick={() => setShowForm(false)}>
-          <div className="modal" onClick={e => e.stopPropagation()}>
-            <h3>Add feedback</h3>
+        {showForm && (
+          <div className="card mb-4" style={{ border: '1px solid var(--border)', boxShadow: 'var(--shadow)' }}>
+            <h3 style={{ marginBottom: 16, fontSize: 16 }}>Add Feedback</h3>
             <form onSubmit={handleSubmit}>
               <div className="form-group">
                 <label className="form-label">Category</label>
@@ -79,7 +63,7 @@ export default function Feedback() {
                   onChange={e => setForm(f => ({ ...f, content: e.target.value }))} required
                   placeholder="Detailed feedback, suggestions, or observations..." />
               </div>
-              <div className="modal-footer">
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginTop: 16 }}>
                 <button type="button" className="btn btn-secondary" onClick={() => setShowForm(false)}>Cancel</button>
                 <button type="submit" className="btn btn-primary" disabled={saving}>
                   {saving ? 'Saving...' : 'Save feedback'}
@@ -87,8 +71,22 @@ export default function Feedback() {
               </div>
             </form>
           </div>
-        </div>
-      )}
+        )}
+
+        {(feedback as Feedback[]).length === 0 && !showForm ? (
+          <div className="empty-state"><p>No feedback yet. Mentors can add structured feedback here.</p></div>
+        ) : (
+          (feedback as Feedback[]).map(f => (
+            <div key={f.id} className="card mb-4" style={{ borderLeft: '3px solid var(--accent)', background: categoryColor[f.category] || 'white' }}>
+              <div className="flex-between mb-4">
+                <span className="tag" style={{ textTransform: 'capitalize' }}>{f.category}</span>
+                <span className="text-muted">{f.author_name} · {new Date(f.created_at).toLocaleDateString()}</span>
+              </div>
+              <p style={{ fontSize: 13, lineHeight: 1.6 }}>{f.content}</p>
+            </div>
+          ))
+        )}
+      </div>
     </div>
   );
 }

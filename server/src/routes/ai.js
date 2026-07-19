@@ -261,7 +261,7 @@ router.post('/generate/revision', authenticate, requireProjectAccess, async (req
             repository_id: repo.id,
             experiences: experiences.rows,
             questions: questions.rows
-        }, { timeout: 90000 });
+        }, { timeout: 300000 });
 
         await pool.query(
             `INSERT INTO documents (project_id, doc_type, title, content, generated_by)
