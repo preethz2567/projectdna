@@ -545,7 +545,7 @@ router.post('/generate/deck', authenticate, requireProjectAccess, async (req, re
       repository_id: repo.id,
       project_id: req.params.projectId,
       deck_type: req.body.deck_type || 'technical'
-    }, { timeout: 90000 });
+    }, { timeout: 300000 });
     res.json(response.data);
   } catch (err) {
     res.status(500).json({ error: err.message });

@@ -28,8 +28,9 @@ def call_llm(system_prompt: str, user_message: str, max_tokens: int = 1500) -> s
                 {'role': 'user', 'content': user_message}
             ],
             'max_tokens': max_tokens,
+            'temperature': 0.2
         },
-        timeout=60
+        timeout=300
     )
     response.raise_for_status()
     return response.json()['choices'][0]['message']['content']

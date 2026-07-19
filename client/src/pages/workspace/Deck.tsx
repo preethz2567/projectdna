@@ -221,7 +221,13 @@ export default function Deck() {
 
   async function generate() {
     setLoading(true); setCurrent(0);
-    try { const r = await generateDeck(projectId!, deckType); setSlides(r.slides || []); }
+    try { 
+      const r = await generateDeck(projectId!, deckType); 
+      setSlides(r.slides || []); 
+    }
+    catch (err: any) {
+      alert(err.response?.data?.error || err.message || 'Failed to generate presentation');
+    }
     finally { setLoading(false); }
   }
 
