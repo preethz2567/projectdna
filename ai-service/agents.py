@@ -40,14 +40,13 @@ def chat_agent(repository_id: str, question: str, chat_history: list = []) -> di
     Answers free-form questions about the project.
     Retrieves relevant chunks first, then answers grounded in that context.
     """
-    chunks = retrieve(repository_id, question, top_k=8)
+    chunks = retrieve(repository_id, question, top_k=4)
     context = build_context(chunks)
 
     system_prompt = """You are ProjectDNA, an AI assistant that helps developers understand their software projects.
 Answer questions accurately based ONLY on the repository context provided.
 If the context doesn't contain enough information to answer, say so clearly.
-Provide highly detailed, in-depth technical explanations. Structure your answers neatly with markdown headings, bullet points, and code snippets where relevant.
-Do NOT give one-line answers; dive deep into the architecture, context, and rationale.""" + ANTI_HALLUCINATION_RULES
+Be concise and technical. Format code snippets with markdown.""" + ANTI_HALLUCINATION_RULES
 
     user_message = f"{context}\n\nQuestion: {question}"
 
