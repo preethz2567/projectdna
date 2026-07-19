@@ -81,7 +81,7 @@ CREATE TABLE IF NOT EXISTS tasks (
   project_id UUID NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
   title TEXT NOT NULL,
   description TEXT,
-  status TEXT DEFAULT 'todo' CHECK (status IN ('todo', 'in_progress', 'done')),
+  status TEXT DEFAULT 'todo' CHECK (status IN ('backlog', 'todo', 'in_progress', 'done')),
   priority TEXT DEFAULT 'medium' CHECK (priority IN ('low', 'medium', 'high')),
   assigned_to UUID REFERENCES users(id),
   created_by UUID NOT NULL REFERENCES users(id),
@@ -118,6 +118,16 @@ CREATE TABLE IF NOT EXISTS interview_questions (
   source TEXT DEFAULT 'ai' CHECK (source IN ('ai', 'user', 'interview_experience')),
   company TEXT,
   difficulty TEXT DEFAULT 'medium' CHECK (difficulty IN ('easy', 'medium', 'hard')),
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS notifications (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+  type VARCHAR(50), 
+  content TEXT,
+  project_id UUID REFERENCES projects(id) ON DELETE CASCADE,
+  is_read BOOLEAN DEFAULT false,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 

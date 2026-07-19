@@ -43,12 +43,12 @@ router.get('/me', require('../middleware/auth').authenticate, async (req, res) =
 
 router.put('/me', require('../middleware/auth').authenticate, async (req, res) => {
   try {
-    const { display_name } = req.body;
+    const { display_name, avatar_url } = req.body;
     if (!display_name) return res.status(400).json({ error: 'Display name is required' });
     
     const result = await pool.query(
-      'UPDATE users SET display_name = $1 WHERE id = $2 RETURNING id, email, display_name, role, avatar_url, created_at',
-      [display_name, req.user.id]
+      'UPDATE users SET display_name = $1, avatar_url = COALESCE($2, avatar_url) WHERE id = $3 RETURNING id, email, display_name, role, avatar_url, created_at',
+      [display_name, avatar_url || null, req.user.id]
     );
     res.json(result.rows[0]);
   } catch (err) {

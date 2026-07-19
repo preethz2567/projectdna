@@ -6,6 +6,9 @@ venv/
 dist/
 ai-service/data/
 project_reference.md
+migrate-rds.js
+
+learning/
 
 # Terraform
 terraform/.terraform/

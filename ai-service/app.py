@@ -15,7 +15,8 @@ def get_db():
         f"postgresql://{os.getenv('DB_USER', 'postgres')}:{os.getenv('DB_PASSWORD', '')}@"
         f"{os.getenv('DB_HOST', 'localhost')}:{os.getenv('DB_PORT', '5432')}/{os.getenv('DB_NAME', 'projectdna')}"
     )
-    return psycopg2.connect(db_url, sslmode='require')
+    ssl_mode = 'require' if ('rds.amazonaws.com' in db_url or os.getenv('FLASK_ENV') == 'production') else 'disable'
+    return psycopg2.connect(db_url, sslmode=ssl_mode)
 
 
 @app.route('/health')
@@ -191,6 +192,7 @@ def generate_deck():
         data = request.json
         result = deck_agent(
             repository_id=data['repository_id'],
+            project_id=data.get('project_id'),
             deck_type=data.get('deck_type', 'technical')
         )
         return jsonify(result)

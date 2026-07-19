@@ -543,6 +543,7 @@ router.post('/generate/deck', authenticate, requireProjectAccess, async (req, re
     if (!repo) return res.status(404).json({ error: 'No repository connected' });
     const response = await axios.post(`${AI_URL}/generate/deck`, {
       repository_id: repo.id,
+      project_id: req.params.projectId,
       deck_type: req.body.deck_type || 'technical'
     }, { timeout: 90000 });
     res.json(response.data);

@@ -40,13 +40,14 @@ def chat_agent(repository_id: str, question: str, chat_history: list = []) -> di
     Answers free-form questions about the project.
     Retrieves relevant chunks first, then answers grounded in that context.
     """
-    chunks = retrieve(repository_id, question, top_k=4)
+    chunks = retrieve(repository_id, question, top_k=8)
     context = build_context(chunks)
 
     system_prompt = """You are ProjectDNA, an AI assistant that helps developers understand their software projects.
 Answer questions accurately based ONLY on the repository context provided.
 If the context doesn't contain enough information to answer, say so clearly.
-Be concise and technical. Format code snippets with markdown.""" + ANTI_HALLUCINATION_RULES
+Provide highly detailed, in-depth technical explanations. Structure your answers neatly with markdown headings, bullet points, and code snippets where relevant.
+Do NOT give one-line answers; dive deep into the architecture, context, and rationale.""" + ANTI_HALLUCINATION_RULES
 
     user_message = f"{context}\n\nQuestion: {question}"
 
@@ -425,50 +426,146 @@ Make questions specific to THIS project. Test architectural decisions, not gener
 
 
 # ── Agent 8: Deck Generator ──────────────────────────────────────────────
-def deck_agent(repository_id: str, deck_type: str = 'technical') -> dict:
+def deck_agent(repository_id: str, project_id: str = None, deck_type: str = 'technical') -> dict:
     """
-    Generates presentation slide content for reveal.js.
+    Generates rich, Gamma-style structured presentation slides.
     deck_type: 'technical' | 'demo' | 'interview'
+    Returns slides with layout, theme, bullets array, and optional code snippets.
     """
-    chunks = retrieve(repository_id, 'project overview architecture features deployment tech stack', top_k=8)
+    chunks = retrieve(repository_id, 'project overview architecture features deployment tech stack goals purpose', top_k=10)
     context = build_context(chunks)
 
+    diagram_context = ""
+    diagrams_map = {}
+    if project_id:
+        from rag import get_db
+        try:
+            conn = get_db()
+            cursor = conn.cursor()
+            cursor.execute("SELECT diagram_type, code FROM diagrams WHERE project_id = %s", (project_id,))
+            rows = cursor.fetchall()
+            for row in rows:
+                dtype, code = row
+                diagrams_map[dtype] = code
+                diagram_context += f"- Diagram available: {dtype.upper()}\n"
+            cursor.close()
+            conn.close()
+        except Exception as e:
+            print(f"Error fetching diagrams: {e}")
+    
+    if diagram_context:
+        context += f"\n\nAVAILABLE ARCHITECTURE DIAGRAMS (Use these in 'diagram' type slides):\n{diagram_context}"
+
     deck_configs = {
-        'technical': 'a deep technical presentation for engineers — cover architecture, tech decisions, database design, deployment pipeline, and challenges solved',
-        'demo': 'a product demo presentation — cover what it does, key features, live demo flow, tech stack, and what makes it unique',
-        'interview': 'an interview/viva presentation — cover project purpose, your role, technical decisions and why, challenges faced, and what you learned'
+        'technical': 'a deep technical presentation for engineers — cover system architecture, tech stack decisions, database design, deployment pipeline, API design, and challenges solved',
+        'demo': 'a compelling product demo presentation — cover what problem it solves, key features, user flow, tech stack highlights, and unique differentiators',
+        'interview': 'a detailed interview/viva presentation — cover project purpose, your specific role and contributions, key technical decisions and WHY you made them, challenges you faced, and what you learned'
     }
 
-    system_prompt = f"""You are creating a reveal.js presentation.
+    theme_map = {
+        'technical': 'light',
+        'demo': 'navy',
+        'interview': 'light'
+    }
+    base_theme = theme_map.get(deck_type, 'light')
+
+    system_prompt = f"""You are a professional presentation designer creating a stunning Gamma-style deck.
 Generate {deck_configs.get(deck_type, deck_configs['technical'])}.
 
-Output ONLY a JSON array of slide objects — no other text:
+Return ONLY a valid JSON array. No markdown fences, no explanation, just JSON:
 [
   {{
-    "title": "Slide Title",
-    "content": "Main bullet point\\n• Sub point 1\\n• Sub point 2",
-    "notes": "Speaker notes for this slide",
-    "type": "title|content|code|diagram"
+    "title": "Slide Title Here",
+    "subtitle": "Optional subtitle or tagline (only for title slides)",
+    "bullets": ["First key point — be specific", "Second key point with detail", "Third key point"],
+    "icon": "box",
+    "type": "title",
+    "theme": "{base_theme}",
+    "notes": "What the presenter should say out loud for this slide"
+  }},
+  {{
+    "title": "System Architecture",
+    "subtitle": null,
+    "bullets": ["React + TypeScript frontend on CloudFront CDN", "Node.js Express REST API on ECS Fargate", "PostgreSQL on RDS for relational data"],
+    "icon": "server",
+    "type": "content",
+    "theme": "{base_theme}",
+    "notes": "Explain why each layer was chosen and how they connect"
   }}
 ]
 
-Rules:
-- 8-10 slides total
-- First slide: project title and one-line description
-- Last slide: key takeaways / what I learned
-- content uses \\n for line breaks, • for bullets
-- Keep each slide focused — max 4-5 bullet points
-- notes field contains what the presenter should SAY, not show
-- Be specific to THIS project""" + ANTI_HALLUCINATION_RULES
+STRICT RULES:
+- Generate exactly 10-12 slides to provide comprehensive coverage.
+- Slide types MUST be one of: title, content
+- Themes MUST be one of: navy, dark, light, accent
+- The `icon` field MUST be one of: box, database, server, code, layout, users, rocket, shield, cloud, globe, star, zap
+- First slide must be type "title" with the real project name and a compelling subtitle
+- Last slide must be type "title" with theme "accent" — key takeaways
+- bullets must be a JSON array of strings, NEVER a single string
+- Do NOT use emojis anywhere in the output. Emojis are strictly forbidden. Use the `icon` field instead.
+- Keep each slide to 4-6 bullets maximum. Make bullets extremely precise, deeply technical, and highly structured. Expand on details to make the presentation rich in content.
+- notes is what the presenter SAYS — different from bullets
+- Be 100% specific to THIS project — real names, real tech, real decisions
+- Do NOT use placeholder text like "Project Name" — use the actual project name
+- Write professional, formal technical English. No casual language, no marketing fluff.""" + ANTI_HALLUCINATION_RULES
 
-    user_message = f"{context}\n\nGenerate a {deck_type} presentation deck."
-    raw = call_llm(system_prompt, user_message, max_tokens=3000)
+
+    user_message = f"{context}\n\nGenerate a professional {deck_type} presentation deck."
+    raw = call_llm(system_prompt, user_message, max_tokens=4000)
 
     import json, re
     try:
+        # Try to extract JSON array robustly
         match = re.search(r'\[.*\]', raw, re.DOTALL)
-        slides = json.loads(match.group()) if match else []
+        if match:
+            slides = json.loads(match.group())
+        else:
+            slides = []
+
+        # Normalise: ensure bullets is always a list, and inject diagrams
+        for slide in slides:
+            if isinstance(slide.get('bullets'), str):
+                # Convert newline-separated string to list
+                lines = [l.strip().lstrip('•- ') for l in slide['bullets'].split('\n') if l.strip()]
+                slide['bullets'] = lines
+            if not isinstance(slide.get('bullets'), list):
+                slide['bullets'] = []
+            
+            # Clean markdown bold/italics from bullets
+            cleaned_bullets = []
+            for b in slide['bullets']:
+                if isinstance(b, str):
+                    import re
+                    # Remove ** or * markdown
+                    b = re.sub(r'[*_]{1,2}', '', b)
+                    cleaned_bullets.append(b.strip())
+            slide['bullets'] = cleaned_bullets
+
+            # Ensure theme is set
+            if not slide.get('theme'):
+                slide['theme'] = base_theme
+            
+            # Inject diagram code if missing but type is diagram
+            if slide.get('type') == 'diagram':
+                # Only inject if the LLM left it null/empty, or we have a confirmed DB match
+                title_lower = slide.get('title', '').lower()
+                matched_type = None
+                for dtype in diagrams_map.keys():
+                    if dtype in title_lower:
+                        matched_type = dtype
+                        break
+                if not matched_type and diagrams_map:
+                    matched_type = list(diagrams_map.keys())[0] # Fallback to first diagram
+                
+                # If backend found a match in DB, inject it
+                if matched_type:
+                    slide['diagram_code'] = diagrams_map[matched_type]
+                # If no match in DB, but the slide has no code, provide a default so it doesn't break
+                elif not slide.get('diagram_code'):
+                    slide['diagram_code'] = "graph TD\n  A[Architecture] --> B[Not Found]\n  B --> C[Please generate in Diagrams tab]"
+
     except Exception:
         slides = []
 
     return { 'slides': slides, 'deck_type': deck_type, 'agent': 'deck' }
+

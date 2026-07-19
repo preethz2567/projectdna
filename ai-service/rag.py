@@ -15,10 +15,10 @@ os.makedirs(FAISS_DIR, exist_ok=True)
 
 def get_db():
     db_url = os.getenv('DATABASE_URL') or (
-        f"postgresql://{os.getenv('DB_USER', 'postgres')}:{os.getenv('DB_PASSWORD', '')}@"
-        f"{os.getenv('DB_HOST', 'localhost')}:{os.getenv('DB_PORT', '5432')}/{os.getenv('DB_NAME', 'projectdna')}"
+        f"postgresql://{os.getenv('DB_USER', 'postgres')}:{os.getenv('DB_PASSWORD', '')}@{os.getenv('DB_HOST', 'localhost')}:{os.getenv('DB_PORT', '5432')}/{os.getenv('DB_NAME', 'projectdna')}"
     )
-    return psycopg2.connect(db_url, sslmode='require')
+    ssl_mode = 'require' if ('rds.amazonaws.com' in db_url or os.getenv('FLASK_ENV') == 'production') else 'disable'
+    return psycopg2.connect(db_url, sslmode=ssl_mode)
 
 
 def chunk_repository(repo_data: dict) -> list[dict]:
